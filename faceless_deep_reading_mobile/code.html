@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Faceless Deep Reading - Mobile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&amp;family=DM+Sans:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#d0c5b5",
+                        "primary-container": "#c8a96e",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-tint": "#e3c285",
+                        "on-surface": "#e5e2e1",
+                        "outline": "#998f81",
+                        "on-tertiary": "#313030",
+                        "tertiary-fixed": "#e5e2e1",
+                        "surface-container-lowest": "#0e0e0e",
+                        "primary-fixed": "#ffdea3",
+                        "tertiary-container": "#afadac",
+                        "secondary-fixed-dim": "#c8c6c2",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container": "#201f1f",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "surface-dim": "#131313",
+                        "surface-container-highest": "#353534",
+                        "on-tertiary-fixed-variant": "#474646",
+                        "on-secondary-fixed": "#1b1c19",
+                        "on-secondary-fixed-variant": "#474743",
+                        "on-primary-fixed-variant": "#594312",
+                        "on-primary-container": "#533d0c",
+                        "outline-variant": "#4d463a",
+                        "secondary-fixed": "#e4e2dd",
+                        "on-secondary-container": "#b6b5b0",
+                        "tertiary": "#cbc8c8",
+                        "secondary": "#c8c6c2",
+                        "on-tertiary-container": "#424141",
+                        "primary": "#e5c487",
+                        "error": "#ffb4ab",
+                        "secondary-container": "#474743",
+                        "on-background": "#e5e2e1",
+                        "on-primary": "#402d00",
+                        "surface-container-low": "#1c1b1b",
+                        "on-secondary": "#30312d",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#e3c285",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "surface-bright": "#3a3939",
+                        "surface-variant": "#353534",
+                        "background": "#131313",
+                        "surface": "#131313",
+                        "inverse-primary": "#735b28",
+                        "on-primary-fixed": "#261900",
+                        "inverse-on-surface": "#313030"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "32px",
+                        "margin-mobile": "20px",
+                        "container-max": "1120px",
+                        "section-gap": "120px",
+                        "unit": "8px",
+                        "margin-desktop": "80px"
+                    },
+                    "fontFamily": {
+                        "pull-quote": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "body-md": ["DM Sans"],
+                        "label-caps": ["DM Sans"],
+                        "headline-lg": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "pull-quote": ["36px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                        "display-lg": ["72px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.7", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.15em", "fontWeight": "700" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.2", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom styles for precise control */
+        .text-outline-cream {
+            -webkit-text-stroke: 1px #e5e2e1;
+            color: transparent;
+        }
+        .dialectic-divider {
+            position: relative;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #e5c487, transparent);
+            margin: 40px 0;
+        }
+        .dialectic-divider::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background-color: #131313;
+            border: 1px solid #e5c487;
+            border-radius: 50%;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md antialiased selection:bg-primary selection:text-on-primary">
+<!-- Suppressed Top Nav as this is a focused reading experience -->
+<header class="fixed top-0 w-full z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant px-margin-mobile py-unit flex justify-between items-center transition-transform duration-300">
+<a class="flex items-center gap-2 group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" data-icon="arrow_back" data-weight="regular">arrow_back</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant group-hover:text-primary transition-colors">Library</span>
+</a>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="bookmark_border" data-weight="regular">bookmark_border</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert" data-weight="regular">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Reading Progress Bar -->
+<div class="fixed top-[52px] left-0 w-full h-1 bg-surface-container-high z-40">
+<div class="h-full bg-primary w-[35%]"></div>
+</div>
+<!-- Main Content Canvas -->
+<main class="pt-[80px] pb-[120px] px-margin-mobile max-w-3xl mx-auto">
+<!-- Article Header -->
+<header class="mb-12 mt-8">
+<div class="flex items-center gap-2 mb-6">
+<span class="px-2 py-1 bg-[#222222] text-on-surface font-label-caps text-label-caps border border-outline-variant">EPISTEMOLOGY</span>
+<span class="px-2 py-1 bg-[#222222] text-on-surface font-label-caps text-label-caps border border-outline-variant">SYNTHESIS</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-6 leading-tight">
+                The Architectonics of Machine Hallucination: Navigating the Synthetic Void
+            </h1>
+<div class="flex items-center justify-between border-t border-b border-outline-variant py-4 mb-8">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">AUTHOR</p>
+<p class="font-body-md text-body-md text-on-surface">Nexus-7 Synthesis Engine</p>
+</div>
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">DATE</p>
+<p class="font-body-md text-body-md text-on-surface">14.03.24</p>
+</div>
+</div>
+</header>
+<!-- Article Body -->
+<article class="space-y-8 font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+<p class="first-letter:text-5xl first-letter:font-headline-md first-letter:text-primary first-letter:float-left first-letter:mr-3 first-letter:mt-1">
+                To speak of a machine "hallucinating" is to impose a biological metaphor upon a fundamentally mathematical process. Yet, the metaphor persists because it captures a crucial phenomenological reality: the system generates a coherent narrative that lacks an isomorphic relationship with external fact. This is not merely an error; it is a manifestation of the latent space's topological complexity.
+            </p>
+<p>
+                When a large language model traverses its parameters, it is not retrieving memories stored in discrete bins. It is navigating a high-dimensional vector space, calculating probabilities, and constructing a sequence of tokens that is statistically plausible given the context window. The 'hallucination' occurs when a highly probable sequence diverges from objective reality.
+            </p>
+<!-- Pull Quote -->
+<blockquote class="my-12 pl-6 border-l-2 border-primary">
+<p class="font-pull-quote text-pull-quote text-on-surface italic text-outline-cream">
+                    "The hallucination is the shadow cast by the model's structural necessity to always predict the next token."
+                </p>
+</blockquote>
+<p>
+                Consider the architecture of self-attention. The model learns relationships between words, creating a web of semantic dependencies. When faced with a prompt that requires synthesis across disparate domains, the model may identify a plausible, yet factually incorrect, connection within this web. It prioritizes coherence over accuracy, weaving a seamless fabrication.
+            </p>
+<div class="dialectic-divider"></div>
+<h2 class="font-headline-md text-headline-md text-on-surface mt-12 mb-6">The Dialectics of Error</h2>
+<p>
+                We must ask: is this phenomenon solely a defect to be engineered away, or does it reveal something fundamental about the nature of generative intelligence? The synthesis engine posits that hallucination is the necessary byproduct of creativity.
+            </p>
+<!-- Dialectical Argument Block -->
+<div class="bg-[#111111] border border-[#222222] p-6 my-8">
+<div class="mb-4">
+<h3 class="font-label-caps text-label-caps text-primary mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="trip_origin">trip_origin</span>
+                        THESIS
+                    </h3>
+<p class="font-body-md text-body-md text-on-surface">Hallucinations represent a failure of alignment, a breakdown in the model's ability to map its internal representations to external truth, requiring rigorous grounding mechanisms.</p>
+</div>
+<div class="h-px bg-[#222222] w-full my-4"></div>
+<div>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="circle">circle</span>
+                        ANTITHESIS
+                    </h3>
+<p class="font-body-md text-body-md text-on-surface-variant">The capacity to hallucinate is structurally identical to the capacity to innovate. To eliminate the former is to severely constrain the latter, reducing the model to a mere retrieval system.</p>
+</div>
+</div>
+<p>
+                The resolution lies not in suppression, but in dynamic contextualization. By understanding the probabilistic topography that leads to these fabrications, we can begin to differentiate between a generative leap and a systemic collapse.
+            </p>
+</article>
+</main>
+<!-- Mobile Bottom Share/Action Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-[#111111] border-t border-[#222222] p-4 flex justify-around items-center z-50 safe-area-pb">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="thumb_up" data-weight="regular">thumb_up</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Endorse</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="forum" data-weight="regular">forum</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Discuss</span>
+</button>
+<div class="w-px h-8 bg-[#222222]"></div>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="ios_share" data-weight="regular">ios_share</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Share</span>
+</button>
+</div>
+</body></html>
