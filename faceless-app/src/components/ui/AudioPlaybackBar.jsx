@@ -46,10 +46,10 @@ export default function AudioPlaybackBar({ isVisible, onClose, episodeTitle }) {
           <div className="flex justify-between items-end mb-2">
             <div className="flex flex-col">
               <span className="text-[10px] font-label-caps text-primary uppercase tracking-widest">
-                Now Playing
+                Đang Phát
               </span>
               <h5 className="text-on-surface font-body-md truncate">
-                {episodeTitle || 'The Architecture of Silence: Navigating the Void in Artificial Syntax'}
+                {episodeTitle || 'Kiến Trúc Của Sự Tĩnh Lặng: Điều Hướng Hư Vô Trong Cú Pháp Nhân Tạo'}
               </h5>
             </div>
             <span className="text-[12px] font-label-caps text-on-surface-variant">

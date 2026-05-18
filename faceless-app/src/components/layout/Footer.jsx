@@ -2,15 +2,15 @@ import { Link } from 'react-router-dom'
 
 export default function Footer() {
   const footerLinks = [
-    { path: '/privacy', label: 'Privacy' },
-    { path: '/terms', label: 'Terms' },
-    { path: '/institutional', label: 'Institutional Access' },
-    { path: '/contact', label: 'Contact' },
+    { path: '/privacy', label: 'Quyền Riêng Tư' },
+    { path: '/terms', label: 'Điều Khoản' },
+    { path: '/institutional', label: 'Truy Cập Tổ Chức' },
+    { path: '/contact', label: 'Liên Hệ' },
   ]
 
   return (
     <footer className="w-full bg-surface border-t border-outline-variant mt-section-gap">
-      <div className="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-gutter gap-6">
+      <div className="max-w-container-max mx-auto max-w-full flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-gutter gap-6">
         <div className="font-display-lg text-headline-md text-on-surface uppercase tracking-tighter">
           FACELESS
         </div>
@@ -26,7 +26,7 @@ export default function Footer() {
           ))}
         </div>
         <div className="font-body-md text-body-md text-on-surface-variant text-sm text-center md:text-right">
-          © 2024 FACELESS DIALECTICS. FOR THE DISCERNING MIND.
+          © 2024 FACELESS DIALECTICS. DÀNH CHO TRÍ TUỆ SÁNG SUỐT.
         </div>
       </div>
     </footer>

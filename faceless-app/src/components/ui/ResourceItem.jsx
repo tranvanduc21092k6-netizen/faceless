@@ -53,13 +53,13 @@ export default function ResourceItem({ title, description, format, size, icon })
         {downloadState === 'downloading' && (
           <>
             <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
-            Downloading...
+            Đang tải...
           </>
         )}
         {downloadState === 'done' && (
           <>
             <span className="material-symbols-outlined text-[18px]">check_circle</span>
-            Downloaded
+            Đã tải
           </>
         )}
       </button>

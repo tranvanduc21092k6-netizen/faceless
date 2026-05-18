@@ -8,9 +8,9 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path
 
   const navLinks = [
-    { path: '/archive', label: 'Archive' },
-    { path: '/library', label: 'Library' },
-    { path: '/manifesto', label: 'Manifesto' },
+    { path: '/archive', label: 'Kho Lưu Trữ' },
+    { path: '/library', label: 'Thư Viện' },
+    { path: '/manifesto', label: 'Tuyên Ngôn' },
   ]
 
   return (
@@ -43,13 +43,13 @@ export default function Navbar() {
           to="/login"
           className="text-on-surface-variant hover:text-primary transition-colors duration-300 hidden sm:block"
         >
-          Login
+          Đăng Nhập
         </Link>
         <Link
-          to="/subscribe"
+          to="/register"
           className="bg-primary text-[#0A0A0A] px-6 py-3 hover:opacity-80 transition-opacity uppercase"
         >
-          Subscribe
+          Đăng Ký
         </Link>
         {/* Mobile Menu Button */}
         <button

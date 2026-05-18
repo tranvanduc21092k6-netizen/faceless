@@ -25,12 +25,12 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
           {/* Modal Content */}
           <div className="text-center">
             <div className="font-display-lg text-headline-md text-on-surface uppercase mb-4 tracking-widest">
-              Access the Inner Circle
+              Truy Cập Vòng Tròn Nội Bộ
             </div>
             <div className="w-12 h-px bg-primary-container mx-auto mb-8" />
             <p className="font-body-lg text-on-surface/80 mb-10 leading-relaxed">
-              The depth of the dialectic is reserved for those who seek to transcend the surface.
-              Join our archive to access the complete synthesis of thought.
+              Chiều sâu của biện chứng được dành cho những ai tìm cách vượt qua bề mặt.
+              Tham gia kho lưu trữ để truy cập toàn bộ sự tổng hợp tư duy.
             </p>
             {/* Registration Form */}
             <form className="space-y-6" onSubmit={handleSubmit}>
@@ -39,7 +39,7 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your Email Address"
+                  placeholder="Địa chỉ email của bạn"
                   className="w-full bg-transparent border-b border-outline-variant py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container transition-colors font-body-md"
                   required
                 />
@@ -48,10 +48,10 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
                 type="submit"
                 className="w-full bg-primary-container text-[#0A0A0A] font-label-caps text-label-caps uppercase py-4 hover:brightness-110 transition-all tracking-[0.2em] font-bold"
               >
-                Join the Dialectic
+                Tham Gia Biện Chứng
               </button>
               <p className="text-[10px] font-label-caps uppercase text-on-surface-variant tracking-widest mt-4">
-                By joining, you agree to our terms of inquiry.
+                Bằng việc tham gia, bạn đồng ý với điều khoản truy vấn.
               </p>
             </form>
           </div>
@@ -89,12 +89,12 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
               lock
             </span>
             <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-4">
-              The rest is for the discerning.
+              Phần còn lại dành cho trí tuệ sáng suốt.
             </h2>
             <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-              You have reached the edge of the public domain. Beyond this point, our discourse
-              delves deeper into the shadows of conventional thought. Join the dialectic to
-              access the full archive, exclusive essays, and private symposiums.
+              Bạn đã đến rìa của không gian công cộng. Bên ngoài điểm này, diễn ngôn của chúng tôi
+              đi sâu hơn vào bóng tối của tư duy thông thường. Tham gia biện chứng để
+              truy cập toàn bộ kho lưu trữ, bài luận độc quyền và hội nghị riêng tư.
             </p>
           </div>
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -105,7 +105,7 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="Nhập email của bạn"
                 required
                 className="w-full bg-transparent border-0 border-b border-[#222222] text-on-surface font-body-md text-body-md py-3 px-0 focus:ring-0 focus:border-primary-container focus:outline-none transition-colors placeholder:text-on-surface-variant/50"
               />
@@ -114,7 +114,7 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
               type="submit"
               className="w-full bg-primary-container text-[#0A0A0A] font-label-caps text-label-caps py-4 px-6 hover:bg-primary transition-colors flex items-center justify-center group"
             >
-              Join the Dialectic
+              Tham Gia Biện Chứng
               <span className="material-symbols-outlined ml-2 text-lg group-hover:translate-x-1 transition-transform">
                 arrow_forward
               </span>
@@ -122,13 +122,13 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
           </form>
           <div className="mt-8 pt-6 border-t border-[#222222] flex items-center justify-between">
             <span className="font-body-md text-body-md text-on-surface-variant text-sm">
-              Already an initiate?
+              Đã là thành viên?
             </span>
             <a
               href="#"
               className="font-label-caps text-label-caps text-on-surface hover:text-primary transition-colors border-b border-transparent hover:border-primary"
             >
-              Sign In
+              Đăng Nhập
             </a>
           </div>
         </div>

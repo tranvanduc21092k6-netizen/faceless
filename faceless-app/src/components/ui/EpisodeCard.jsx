@@ -8,7 +8,7 @@ export default function EpisodeCard({ episode, title, description, duration, isF
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container text-on-surface font-label-caps text-label-caps mb-6 border border-outline-variant">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Latest Transmission
+            Bản Mới Nhất
           </div>
           <h3 className="font-headline-md text-headline-md text-on-surface mb-4 group-hover:text-primary transition-colors">
             {title}
@@ -25,11 +25,11 @@ export default function EpisodeCard({ episode, title, description, duration, isF
             </span>
             <span className="flex items-center gap-1">
               <span className="material-symbols-outlined text-[16px]">headphones</span>
-              Audio
+              Âm Thanh
             </span>
           </div>
           <button
-            aria-label="Play Episode"
+            aria-label="Phát Tập"
             className="w-12 h-12 flex items-center justify-center border border-surface-container text-on-surface group-hover:border-primary group-hover:text-primary transition-all rounded-full bg-surface-container-lowest"
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -53,7 +53,7 @@ export default function EpisodeCard({ episode, title, description, duration, isF
       </div>
       <div className="flex items-center justify-between border-t border-surface-container pt-4 mt-6">
         <span className="text-on-surface-variant font-label-caps text-label-caps">{duration}</span>
-        <button aria-label="Play Episode" className="text-on-surface hover:text-primary transition-colors">
+        <button aria-label="Phát Tập" className="text-on-surface hover:text-primary transition-colors">
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
             play_circle
           </span>
