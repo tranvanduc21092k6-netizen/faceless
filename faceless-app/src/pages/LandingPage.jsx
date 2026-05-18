@@ -17,10 +17,10 @@ export default function LandingPage() {
       <section className="w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop min-h-[716px] flex flex-col justify-center items-center text-center mt-section-gap">
         <h1 className="font-display-lg text-headline-lg-mobile md:text-display-lg text-on-surface mb-8">
           <span className="block text-on-surface-variant opacity-60 text-headline-lg mb-4">
-            Đây không phải podcast self-help.
+            Thế giới không thiếu thông tin
           </span>
-          <span className="block">Đây là nơi tư duy bị tra tấn.</span>
-        </h1>
+          <span className="block">Nhưng lăng kính nào khiến bạn sáng tỏ?</span>
+        </h1> 
         <a
           href="#preview"
           className="mt-8 bg-primary text-[#0A0A0A] font-label-caps text-label-caps px-8 py-4 hover:opacity-90 transition-opacity tracking-widest uppercase inline-block"
@@ -35,21 +35,21 @@ export default function LandingPage() {
           {[
             {
               num: '01',
-              title: 'Ảo Tưởng Sự Thật',
-              headline: 'Bản chất của thông tin là sự dối trá được sắp xếp.',
-              body: 'Phân tích cấu trúc của truyền thông đại chúng và cách nó định hình một thực tại giả lập, nơi sự thật chỉ là một sản phẩm phái sinh.',
+              title: 'Đuổi theo mà không biết mình đang đuổi gì',
+              headline: 'Cứ tưởng mình đang sống — thật ra đang diễn.',
+              body: 'Mạng xã hội cho bạn thấy ai cũng đang ổn, đang phát triển, đang "tìm thấy chính mình". Và bạn bắt đầu đuổi theo cái hình ảnh đó — không phải vì bạn muốn, mà vì sợ bị bỏ lại.',
             },
             {
               num: '02',
-              title: 'Cái Chết Của Tính Chân Thực',
-              headline: 'Khi AI viết kịch bản cho linh hồn con người.',
-              body: 'Sự xâm thực của thuật toán vào không gian nhận thức cá nhân. Làm thế nào để giữ lại bản ngã trong kỷ nguyên của deepfake và tư duy vay mượn.',
+              title: 'Lời khuyên nào cũng nghe đúng, mà chẳng dùng được',
+              headline: 'Tại sao bạn biết hết mà vẫn không thay đổi được gì?',
+              body: 'Không phải vì bạn thiếu ý chí. Mà vì hầu hết lời khuyên được thiết kế để bạn cảm thấy tốt hơn trong 10 phút — không phải để bạn nhìn thẳng vào thứ đang thật sự xảy ra.',
             },
             {
               num: '03',
-              title: 'Nền Dân Chủ Của Sự Ngu Dốt',
-              headline: 'Đám đông không tìm kiếm chân lý, họ tìm kiếm sự đồng thuận.',
-              body: 'Cơ chế tâm lý học đám đông trên không gian mạng và cách nó triệt tiêu các luồng tư duy độc lập thông qua áp lực bầy đàn.',
+              title: 'Cô đơn ngay giữa đám người hiểu mình',
+              headline: 'Bạn bè đông mà vẫn thấy không ai thật sự hiểu.',
+              body: 'Không phải họ không quan tâm. Mà là có những thứ bạn không nói được — vì nói ra nghe kỳ, vì không ai hỏi, vì bạn cũng không chắc mình đang cảm thấy gì.',
             },
           ].map((item, index) => (
             <div
@@ -92,7 +92,7 @@ export default function LandingPage() {
           nhãn là sự thật, để có thể ngủ yên trong bóng tối của chính mình."
         </blockquote>
         <div className="mt-8 font-label-caps text-label-caps text-primary">
-          — FACELESS DIALECTICS, TẬP 04
+          — FACELESS, TẬP 04
         </div>
       </section>
 
@@ -102,10 +102,10 @@ export default function LandingPage() {
           {!emailSubmitted ? (
             <>
               <h2 className="font-headline-md text-headline-md text-on-surface mb-2">
-                Tiến vào thư viện tối.
+                Tiến vào thư viện tối
               </h2>
               <p className="font-body-md text-body-md text-on-surface-variant mb-8">
-                Nhận tài liệu + nghe bản Full.
+                Nhận tài liệu + nghe bản hoàn chỉnh 
               </p>
               <form
                 className="flex flex-col sm:flex-row gap-4 w-full"
@@ -136,12 +136,12 @@ export default function LandingPage() {
                 mark_email_read
               </span>
               <h3 className="font-headline-md text-headline-md text-primary leading-tight text-center">
-                Chào mừng bạn đến với sự thật.
+                Xong rồi.
                 <br />
-                Kiểm tra hộp thư để bắt đầu.
+                Kiểm tra hộp thư của bạn.
               </h3>
               <p className="font-body-md text-body-md text-on-surface-variant opacity-80 mt-unit">
-                A confirmation protocol has been dispatched.
+                Tài liệu đang trên đường đến. Có thể mất vài phút.
               </p>
             </div>
           )}
@@ -154,7 +154,7 @@ export default function LandingPage() {
           {/* Social Proof */}
           <div className="flex items-center justify-center gap-2 font-label-caps text-label-caps text-on-surface-variant">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            Đang có 1,420 thành viên tư duy cùng nhau
+            1,420 thành viên đang tham gia 
           </div>
         </div>
       </section>

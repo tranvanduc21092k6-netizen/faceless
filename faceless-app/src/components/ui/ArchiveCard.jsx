@@ -51,14 +51,14 @@ export default function ArchiveCard({ title, tags, excerpt, isLocked = true, onL
       <div className="mt-6 pt-4 border-t border-surface-container-high">
         {isLocked ? (
           <p className="font-label-caps text-label-caps uppercase text-primary tracking-widest group-hover:underline underline-offset-4">
-            - Đăng nhập để đọc tiếp
+            - Đăng nhập để đọc tiếp!
           </p>
         ) : (
           <Link
             to="/article/sample"
             className="font-label-caps text-label-caps uppercase text-on-surface tracking-widest group-hover:text-primary transition-colors"
           >
-            - Đọc bài luận
+            - Đọc bài viết
           </Link>
         )}
       </div>

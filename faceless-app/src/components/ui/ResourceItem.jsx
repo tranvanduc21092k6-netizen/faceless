@@ -47,7 +47,7 @@ export default function ResourceItem({ title, description, format, size, icon })
         {downloadState === 'idle' && (
           <>
             <span className="material-symbols-outlined text-[18px]">download</span>
-            Download
+            Tải về
           </>
         )}
         {downloadState === 'downloading' && (

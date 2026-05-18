@@ -22,7 +22,8 @@ export default function LibraryPage() {
             Thư Viện
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-            Truy cập các luồng biện chứng hoàn chỉnh, đối thoại âm thanh chưa cắt, và các văn bản nền tảng. Kho lưu trữ riêng tư cho sự tổng hợp nghiêm cẩn.
+            Một không gian dành cho những bài viết dài hơn, cuộc trò chuyện sâu hơn 
+            và các góc nhìn không thể được gói chỉ trong thoáng giây.
           </p>
         </header>
 

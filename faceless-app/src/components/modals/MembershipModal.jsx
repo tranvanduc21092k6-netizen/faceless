@@ -29,8 +29,8 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
             </div>
             <div className="w-12 h-px bg-primary-container mx-auto mb-8" />
             <p className="font-body-lg text-on-surface/80 mb-10 leading-relaxed">
-              Chiều sâu của biện chứng được dành cho những ai tìm cách vượt qua bề mặt.
-              Tham gia kho lưu trữ để truy cập toàn bộ sự tổng hợp tư duy.
+              Tham gia để đọc toàn bộ bài viết, góc nhìn chuyên sâu và những nội dung
+              chỉ dành cho thành viên.
             </p>
             {/* Registration Form */}
             <form className="space-y-6" onSubmit={handleSubmit}>
@@ -48,10 +48,10 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
                 type="submit"
                 className="w-full bg-primary-container text-[#0A0A0A] font-label-caps text-label-caps uppercase py-4 hover:brightness-110 transition-all tracking-[0.2em] font-bold"
               >
-                Tham Gia Biện Chứng
+                Tham Gia Ngay!
               </button>
               <p className="text-[10px] font-label-caps uppercase text-on-surface-variant tracking-widest mt-4">
-                Bằng việc tham gia, bạn đồng ý với điều khoản truy vấn.
+                Bằng việc tham gia, bạn đồng ý với điều khoản.
               </p>
             </form>
           </div>

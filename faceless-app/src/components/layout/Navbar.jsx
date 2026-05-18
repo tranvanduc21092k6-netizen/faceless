@@ -10,7 +10,7 @@ export default function Navbar() {
   const navLinks = [
     { path: '/archive', label: 'Kho Lưu Trữ' },
     { path: '/library', label: 'Thư Viện' },
-    { path: '/manifesto', label: 'Tuyên Ngôn' },
+    { path: '/manifesto', label: 'Quan Điểm' },
   ]
 
   return (

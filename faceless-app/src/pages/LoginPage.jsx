@@ -33,7 +33,7 @@ export default function LoginPage() {
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="font-display-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-4">
-          Ngưỡng Cửa
+          Chào Mừng Trở Lại
         </h1>
         <p className="font-body-md text-body-md text-on-surface-variant max-w-md mx-auto">
           Tri thức đòi hỏi sự tĩnh lặng. Tĩnh lặng đòi hỏi danh tính.
@@ -45,10 +45,10 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Email */}
           <FormInput
-            id="login-email"
-            label="Định Danh Thư Tín"
+            label="Email"
+            placeholder="you@gmail.com"
             type="email"
-            placeholder="Nhập địa chỉ học thuật của bạn"
+            placeholder="Nhập địa chỉ"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -58,9 +58,9 @@ export default function LoginPage() {
           {/* Passphrase */}
           <FormInput
             id="login-passphrase"
-            label="Mật Ngữ"
+            label="Mật Khẩu"
             type="password"
-            placeholder="Nhập mật ngữ của bạn"
+            placeholder="Nhập mật khẩu"
             value={passphrase}
             onChange={(e) => setPassphrase(e.target.value)}
             required
@@ -98,7 +98,7 @@ export default function LoginPage() {
               to="/forgot-passphrase"
               className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest underline underline-offset-4"
             >
-              Quên mật ngữ?
+              Quên mật khẩu?
             </Link>
             <Link
               to="/register"
@@ -124,7 +124,7 @@ export default function LoginPage() {
       {/* Quote */}
       <blockquote className="text-center max-w-lg">
         <p className="font-pull-quote text-[18px] text-on-surface-variant italic opacity-60">
-          "Chân lý là toàn thể." — G.W.F. Hegel
+          Đọc chậm lại một chút cũng không sao!
         </p>
       </blockquote>
     </div>

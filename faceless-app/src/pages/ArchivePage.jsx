@@ -4,31 +4,31 @@ import MembershipModal from '../components/modals/MembershipModal'
 
 const archiveItems = [
   {
-    title: 'Sự Xói Mòn Của Bản Ngã Đích Thực Trong Không Gian Siêu Kết Nối',
-    tags: ['Bản ngã', 'Vô định'],
+    title: 'Khi Ta Dần Đánh Mất Chính Mình Trên Internet',
+    tags: ['Bản thân', 'Mạng xã hội'],
     excerpt:
-      'Khi môi trường số ngày càng đòi hỏi sự chân thực mang tính trình diễn, bản ngã thật sự bị che khuất dưới những lớp lang của sự dễ bị tổn thương được dàn dựng. Biện chứng này xem xét áp lực ghi chép cuộc sống liên tục dẫn đến trạng thái nghịch lý, nơi trải nghiệm chân thật bị thay thế bởi bản mô phỏng của nó.',
+      'Càng cố gắng thể hiện bản thân trên mạng, chúng ta càng dễ xa rời con người thật của mình. Cuộc sống dần trở thành thứ cần được ghi lại và trình diễn hơn là thực sự trải nghiệm.',
     isLocked: true,
   },
   {
-    title: 'Sự Phi Lý Công Sở Và Thương Mại Hóa Đam Mê',
-    tags: ['Công sở', 'Bản ngã'],
+    title: 'Khi Đam Mê Trở Thành Công Việc',
+    tags: ['Công việc', 'Bản thân'],
     excerpt:
-      'Nơi làm việc hiện đại không còn đòi hỏi lao động đơn thuần; nó đòi hỏi sự hòa tan đời sống nội tâm cá nhân vào tinh thần doanh nghiệp. Chúng tôi điều tra thủ thuật ngôn ngữ biến sự bóc lột thành cơ hội, và cách "đam mê" bị vũ khí hóa để khai thác giá trị thặng dư.',
+      'Môi trường công sở hiện đại không chỉ lấy thời gian, mà còn đòi hỏi cảm xúc và bản sắc cá nhân. Đôi khi “hãy làm điều bạn yêu” lại trở thành cách khiến con người làm việc nhiều hơn mà không nhận ra.',
     isLocked: true,
   },
   {
-    title: 'Điều Hướng Kiến Trúc Của Sự Chán Chường Hiện Đại',
-    tags: ['Vô định'],
+    title: 'Cảm Giác Trống Rỗng Giữa Cuộc Sống Hiện Đại',
+    tags: ['Mất phương hướng'],
     excerpt:
-      'Đi sâu vào cảm giác uể oải lan tỏa đặc trưng cho cuộc sống đô thị đương đại. Vượt ra ngoài sự nhàm chán đơn thuần, trạng thái "vô định" phản ánh sự mất kết nối cấu trúc với các tường thuật có ý nghĩa, mắc kẹt cá nhân trong không gian chuyển tiếp với vô hạn lựa chọn nhưng không có động lực.',
+      'Giữa quá nhiều lựa chọn và nhịp sống liên tục, nhiều người rơi vào trạng thái lửng lơ — không thật sự tệ, nhưng cũng không thấy ý nghĩa rõ ràng trong cuộc sống.',
     isLocked: true,
   },
   {
-    title: 'Panopticon Của Văn Phòng Mở',
-    tags: ['Công sở', 'Vô định'],
+    title: 'Văn Phòng Mở Và Áp Lực Phải Luôn “Có Mặt”',
+    tags: ['Công việc', 'Xã hội'],
     excerpt:
-      'Phân tích hệ lụy tâm lý của sự minh bạch kiến trúc tại nơi làm việc. Việc xóa bỏ ranh giới vật lý không thúc đẩy hợp tác, mà buộc tự giám sát liên tục, dẫn đến san phẳng sự bất đồng sáng tạo và bình thường hóa các hệ thống cấp bậc vô hình.',
+      'Không gian làm việc mở khiến con người cảm thấy mình luôn bị quan sát. Điều đó vô tình tạo ra áp lực phải liên tục thể hiện sự bận rộn và chuyên nghiệp.',
     isLocked: false,
   },
 ]
@@ -42,11 +42,10 @@ export default function ArchivePage() {
         {/* Header */}
         <header className="mb-section-gap text-center md:text-left border-b border-outline-variant pb-8">
           <h1 className="font-display-lg text-display-lg text-on-surface mb-4">
-            Kho Lưu Trữ Biện Chứng
+            Kho Lưu Trữ Góc Nhìn
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-            Kho tàng tư duy được tổng hợp, khám phá giao điểm của bản ngã,
-            mục đích và sự tồn tại hiện đại thông qua truy vấn nghiêm cẩn.
+            Kho tàng tư duy được khám phá và tổng hợp.
           </p>
         </header>
 

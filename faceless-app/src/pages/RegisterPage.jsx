@@ -20,9 +20,9 @@ export default function RegisterPage() {
     const validList = []
 
     if (value.length >= 12) {
-      validList.push('Tối thiểu 12 ký tự có trọng lượng ngữ nghĩa')
+      validList.push('Ít nhất 12 ký tự')
     } else {
-      errorList.push('Tối thiểu 12 ký tự có trọng lượng ngữ nghĩa')
+      errorList.push('Ít nhất 12 ký tự')
     }
 
     const hasMixed =
@@ -31,9 +31,9 @@ export default function RegisterPage() {
       /[a-z]/.test(value) &&
       /[0-9]/.test(value)
     if (hasMixed) {
-      validList.push('Kết hợp ký hiệu đa dạng')
+      validList.push('Có chữ hoa, chữ thường, số và ký tự đặc biệt')
     } else {
-      errorList.push('Kết hợp ký hiệu đa dạng')
+      errorList.push('Có chữ hoa, chữ thường, số và ký tự đặc biệt')
     }
 
     setPassphraseValidation({ errors: errorList, valid: validList })
@@ -58,13 +58,13 @@ export default function RegisterPage() {
     const isPassphraseValid = validatePassphrase(formData.passphrase)
 
     if (!isPassphraseValid) {
-      setErrors((prev) => ({ ...prev, passphrase: 'CHƯA ĐÁP ỨNG YÊU CẦU ĐỘ PHỨC TẠP' }))
+      setErrors((prev) => ({ ...prev, passphrase: 'Mật khẩu chưa đủ mạnh' }))
       setIsLoading(false)
       return
     }
 
     if (!agreedToTerms) {
-      setErrors((prev) => ({ ...prev, terms: 'Bạn phải xác nhận Tuyên Ngôn Quyền Riêng Tư.' }))
+      setErrors((prev) => ({ ...prev, terms: 'Bạn cần đồng ý với chính sách trước khi tiếp tục.' }))
       setIsLoading(false)
       return
     }
@@ -89,10 +89,10 @@ export default function RegisterPage() {
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="font-display-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-4">
-          Khởi Đầu Tổng Hợp
+          Tạo Tài Khoản 
         </h1>
         <p className="font-body-md text-body-md text-on-surface-variant max-w-lg mx-auto">
-          Bước vào biện chứng đòi hỏi một danh tính được xác minh. Dữ liệu của bạn được bảo mật trong kho lưu trữ mã hóa của chúng tôi.
+          Tham gia một góc nhỏ để suy nghĩ chậm lại trong cuộc sống đầy hỗn loạn
         </p>
       </div>
 
@@ -105,9 +105,9 @@ export default function RegisterPage() {
           {/* Email */}
           <FormInput
             id="register-email"
-            label="Địa Chỉ Email"
+            label="Email"
+            placeholder="you@gmail.com" 
             type="email"
-            placeholder="hocgia@bienchinh.org"
             value={formData.email}
             onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
             error={errors.email}
@@ -118,9 +118,9 @@ export default function RegisterPage() {
           {/* Passphrase */}
           <FormInput
             id="register-passphrase"
-            label="Mật Ngữ"
+            label="Mật Khẩu"
+            placeholder="Tạo mật khẩu của bạn"
             type="password"
-            placeholder="Tạo mật ngữ của bạn"
             value={formData.passphrase}
             onChange={handlePassphraseChange}
             error={errors.passphrase}
@@ -152,9 +152,9 @@ export default function RegisterPage() {
             <label htmlFor="register-terms" className="font-body-md text-[14px] text-on-surface-variant cursor-pointer leading-relaxed">
               Tôi xác nhận{' '}
               <Link to="/manifesto" className="text-primary hover:underline underline-offset-2">
-                Tuyên Ngôn Quyền Riêng Tư
+                Chính Sách Riêng Tư
               </Link>{' '}
-              và đồng ý với các điều khoản trao đổi tri thức.
+              và đồng ý với các điều khoản sử dụng.
             </label>
           </div>
           {errors.terms && (
@@ -172,16 +172,16 @@ export default function RegisterPage() {
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
-                Đang khởi tạo...
+                Đang tạo tài khoản...
               </span>
             ) : (
-              'Khởi Tạo Đăng Ký'
+              'Tạo Tài Khoản'
             )}
           </button>
 
           {/* Login Link */}
           <p className="text-center font-body-md text-body-md text-on-surface-variant">
-            Đã tham gia tổng hợp?{' '}
+            Đã có tài khoản?{' '}
             <Link
               to="/login"
               className="text-on-surface font-bold hover:text-primary transition-colors underline underline-offset-4"
