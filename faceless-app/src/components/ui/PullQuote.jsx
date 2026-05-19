@@ -1,3 +1,5 @@
+'use client'
+
 export default function PullQuote({ children, citation }) {
   return (
     <section className="w-full max-w-4xl mx-auto px-margin-mobile md:px-margin-desktop mt-section-gap text-center">

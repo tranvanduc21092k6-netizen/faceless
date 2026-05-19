@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 
 export default function ResourceItem({ title, description, format, size, icon }) {

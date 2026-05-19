@@ -1,3 +1,5 @@
+'use client'
+
 export default function DialecticDivider({ variant = 'diamond' }) {
   if (variant === 'simple') {
     return <div className="dialectic-divider-simple" />

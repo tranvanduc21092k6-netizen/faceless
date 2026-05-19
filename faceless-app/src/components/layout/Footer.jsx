@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom'
+'use client'
+
+import Link from 'next/link'
 
 export default function Footer() {
   const footerLinks = [
@@ -18,7 +20,7 @@ export default function Footer() {
           {footerLinks.map((link) => (
             <Link
               key={link.path}
-              to={link.path}
+              href={link.path}
               className="text-on-surface-variant hover:text-primary transition-colors duration-200 uppercase"
             >
               {link.label}

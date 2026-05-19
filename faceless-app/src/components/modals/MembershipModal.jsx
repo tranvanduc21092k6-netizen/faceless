@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 
 export default function MembershipModal({ isOpen, onClose, variant = 'default' }) {

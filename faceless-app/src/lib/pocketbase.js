@@ -1,7 +1,7 @@
 import PocketBase from 'pocketbase';
 
-// Địa chỉ PocketBase Server (sẽ lấy từ biến môi trường VITE_POCKETBASE_URL, mặc định là http://127.0.0.1:8090)
-const pbUrl = import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090';
+// Địa chỉ PocketBase Server (sẽ lấy từ biến môi trường NEXT_PUBLIC_POCKETBASE_URL, mặc định là http://127.0.0.1:8090)
+const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
 
 // Khởi tạo connection với PocketBase
 export const pb = new PocketBase(pbUrl);

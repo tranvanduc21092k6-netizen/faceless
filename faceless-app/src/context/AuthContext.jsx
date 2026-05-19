@@ -1,13 +1,20 @@
+'use client'
+
 import { createContext, useContext, useState, useEffect } from 'react'
 import { pb } from '../lib/pocketbase'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(pb.authStore.model)
-  const [isAuthenticated, setIsAuthenticated] = useState(pb.authStore.isValid)
+  const [user, setUser] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthReady, setIsAuthReady] = useState(false)
 
   useEffect(() => {
+    setUser(pb.authStore.model)
+    setIsAuthenticated(pb.authStore.isValid)
+    setIsAuthReady(true)
+
     // Lắng nghe thay đổi trạng thái đăng nhập từ PocketBase
     const unsubscribe = pb.authStore.onChange((token, model) => {
       setUser(model)
@@ -65,6 +72,7 @@ export function AuthProvider({ children }) {
     pb.authStore.clear() // Xoá session
     setUser(null)
     setIsAuthenticated(false)
+    setIsAuthReady(true)
   }
 
   const forgotPassphrase = async (email) => {
@@ -77,7 +85,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout, forgotPassphrase }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isAuthReady, login, register, logout, forgotPassphrase }}>
       {children}
     </AuthContext.Provider>
   )

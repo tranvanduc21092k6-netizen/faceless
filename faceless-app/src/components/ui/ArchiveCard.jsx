@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom'
+'use client'
+
+import Link from 'next/link'
 
 export default function ArchiveCard({ title, tags, excerpt, isLocked = true, onLockedClick }) {
   const handleClick = () => {
@@ -55,7 +57,7 @@ export default function ArchiveCard({ title, tags, excerpt, isLocked = true, onL
           </p>
         ) : (
           <Link
-            to="/article/sample"
+            href="/article/sample"
             className="font-label-caps text-label-caps uppercase text-on-surface tracking-widest group-hover:text-primary transition-colors"
           >
             - Đọc bài viết

@@ -1,3 +1,5 @@
+'use client'
+
 export default function EpisodeCard({ episode, title, description, duration, isFeatured = false, onPlay }) {
   if (isFeatured) {
     return (
