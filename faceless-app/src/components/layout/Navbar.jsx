@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 export default function Navbar() {
   const location = useLocation()
+  const { isAuthenticated, user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const isActive = (path) => location.pathname === path
@@ -38,22 +40,59 @@ export default function Navbar() {
           ))}
         </div>
       </div>
-      <div className="flex items-center gap-4 font-label-caps text-label-caps">
-        <Link
-          to="/login"
-          className="text-on-surface-variant hover:text-primary transition-colors duration-300 hidden sm:block"
-        >
-          Đăng Nhập
-        </Link>
-        <Link
-          to="/register"
-          className="bg-primary text-[#0A0A0A] px-6 py-3 hover:opacity-80 transition-opacity uppercase"
-        >
-          Đăng Ký
-        </Link>
+
+      <div className="flex items-center gap-6 font-label-caps text-label-caps">
+        {isAuthenticated ? (
+          // HIỂN THỊ TRẠNG THÁI ĐÃ ĐĂNG NHẬP (STITCH STYLE)
+          <div className="flex items-center gap-6">
+            {user?.role === 'admin' && (
+              <Link
+                to="/admin"
+                className="bg-[#201f1f] text-primary border border-primary px-3.5 py-2 hover:bg-primary hover:text-[#0A0A0A] transition-all uppercase text-[10px] tracking-wider font-bold"
+              >
+                Console Admin
+              </Link>
+            )}
+
+            <div className="flex items-center space-x-3 group cursor-pointer">
+              <span className="hidden sm:inline font-label-caps text-label-caps text-on-surface-variant group-hover:text-primary transition-colors duration-300">
+                {user?.name || 'Học Giả Ẩn Danh'}
+              </span>
+              <div className="w-8 h-8 rounded-full bg-[#111111] border border-outline-variant flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:border-primary">
+                <span className="material-symbols-outlined text-primary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  account_circle
+                </span>
+              </div>
+            </div>
+            
+            <button
+              onClick={logout}
+              className="border border-[#222222] hover:border-primary text-on-surface-variant hover:text-primary px-4 py-2 transition-colors uppercase text-[11px]"
+            >
+              Đăng Xuất
+            </button>
+          </div>
+        ) : (
+          // HIỂN THỊ KHI CHƯA ĐĂNG NHẬP
+          <>
+            <Link
+              to="/login"
+              className="text-on-surface-variant hover:text-primary transition-colors duration-300 hidden sm:block"
+            >
+              Đăng Nhập
+            </Link>
+            <Link
+              to="/register"
+              className="bg-primary text-[#0A0A0A] px-6 py-3 hover:opacity-80 transition-opacity uppercase"
+            >
+              Đăng Ký
+            </Link>
+          </>
+        )}
+
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-on-surface"
+          className="md:hidden text-on-surface flex items-center"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle menu"
         >

@@ -5,83 +5,73 @@ import FormInput from '../components/ui/FormInput'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { register } = useAuth()
+  const { register, isAuthenticated, user, logout } = useAuth()
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     passphrase: '',
+    passphraseConfirm: ''
   })
-  const [errors, setErrors] = useState({})
-  const [passphraseValidation, setPassphraseValidation] = useState({ errors: [], valid: [] })
+  const [errorMsg, setErrorMsg] = useState('')
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-
-  const validatePassphrase = (value) => {
-    const errorList = []
-    const validList = []
-
-    if (value.length >= 12) {
-      validList.push('Ít nhất 12 ký tự')
-    } else {
-      errorList.push('Ít nhất 12 ký tự')
-    }
-
-    const hasMixed =
-      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(value) &&
-      /[A-Z]/.test(value) &&
-      /[a-z]/.test(value) &&
-      /[0-9]/.test(value)
-    if (hasMixed) {
-      validList.push('Có chữ hoa, chữ thường, số và ký tự đặc biệt')
-    } else {
-      errorList.push('Có chữ hoa, chữ thường, số và ký tự đặc biệt')
-    }
-
-    setPassphraseValidation({ errors: errorList, valid: validList })
-    return errorList.length === 0
-  }
-
-  const handlePassphraseChange = (e) => {
-    const value = e.target.value
-    setFormData((prev) => ({ ...prev, passphrase: value }))
-    if (value.length > 0) {
-      validatePassphrase(value)
-    } else {
-      setPassphraseValidation({ errors: [], valid: [] })
-    }
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
-    setErrors({})
+    setErrorMsg('')
 
-    const isPassphraseValid = validatePassphrase(formData.passphrase)
-
-    if (!isPassphraseValid) {
-      setErrors((prev) => ({ ...prev, passphrase: 'Mật khẩu chưa đủ mạnh' }))
+    // Kiểm tra hai mật khẩu khớp nhau
+    if (formData.passphrase !== formData.passphraseConfirm) {
+      setErrorMsg('Mật khẩu nhập lại không khớp.')
       setIsLoading(false)
       return
     }
 
     if (!agreedToTerms) {
-      setErrors((prev) => ({ ...prev, terms: 'Bạn cần đồng ý với chính sách trước khi tiếp tục.' }))
+      setErrorMsg('Bạn cần đồng ý với chính sách trước khi tiếp tục.')
       setIsLoading(false)
       return
     }
 
-    await new Promise((r) => setTimeout(r, 1000))
+    const result = await register(
+      formData.name,
+      formData.email,
+      formData.passphrase,
+      formData.passphraseConfirm
+    )
 
-    const result = register('Học Giả Ẩn Danh', formData.email, formData.passphrase)
     if (result.success) {
-      navigate('/registration-success')
+      navigate('/login') // Chuyển sang trang đăng nhập sau khi đăng ký thành công
     } else {
-      if (result.field === 'email') {
-        setErrors({ email: result.error })
-      } else if (result.field === 'passphrase') {
-        setErrors({ passphrase: result.error })
-      }
+      setErrorMsg(result.error)
     }
     setIsLoading(false)
+  }
+  
+  // Khi đã đăng nhập hợp lệ
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-[calc(100vh-160px)] flex flex-col items-center justify-center px-margin-mobile md:px-margin-desktop pt-32 pb-section-gap">
+        <div className="w-full max-w-[520px] bg-[#111111] border border-[#222222] p-8 md:p-12 text-center">
+          <h1 className="font-display-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-4">
+            Chào Mừng Trở Lại
+          </h1>
+          <p className="font-body-md text-body-md text-on-surface-variant max-w-md mx-auto mb-8">
+            Xin chào <strong className="text-primary">{user?.name || user?.email}</strong>.<br />
+            Bạn đang đăng nhập. Không thể tạo tài khoản mới lúc này.
+          </p>
+          <button
+            onClick={() => {
+              logout()
+            }}
+            className="w-full bg-primary text-[#0A0A0A] font-label-caps text-label-caps py-4 uppercase tracking-[0.2em] hover:brightness-110 transition-all"
+          >
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -102,6 +92,18 @@ export default function RegisterPage() {
       {/* Registration Form */}
       <div className="w-full max-w-[520px]">
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Name */}
+          <FormInput
+            id="register-name"
+            label="Tên Hiển Thị"
+            placeholder="Nhập tên của bạn" 
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+            required
+            variant="box"
+          />
+
           {/* Email */}
           <FormInput
             id="register-email"
@@ -110,7 +112,6 @@ export default function RegisterPage() {
             type="email"
             value={formData.email}
             onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-            error={errors.email}
             required
             variant="box"
           />
@@ -119,16 +120,34 @@ export default function RegisterPage() {
           <FormInput
             id="register-passphrase"
             label="Mật Khẩu"
-            placeholder="Tạo mật khẩu của bạn"
+            placeholder="Tạo mật khẩu của bạn (Tối thiểu 8 ký tự)"
             type="password"
             value={formData.passphrase}
-            onChange={handlePassphraseChange}
-            error={errors.passphrase}
-            errorDetails={passphraseValidation.errors.length > 0 ? passphraseValidation.errors : undefined}
-            validDetails={passphraseValidation.valid.length > 0 ? passphraseValidation.valid : undefined}
+            onChange={(e) => setFormData((prev) => ({ ...prev, passphrase: e.target.value }))}
             required
             variant="box"
           />
+
+          {/* Confirm Passphrase */}
+          <FormInput
+            id="register-passphrase-confirm"
+            label="Nhập Lại Mật Khẩu"
+            placeholder="Xác nhận mật khẩu"
+            type="password"
+            value={formData.passphraseConfirm}
+            onChange={(e) => setFormData((prev) => ({ ...prev, passphraseConfirm: e.target.value }))}
+            required
+            variant="box"
+          />
+
+          {/* Error Message */}
+          {errorMsg && (
+            <div className="border-l-2 border-error bg-[#1a1010] p-4">
+              <p className="font-pull-quote text-[14px] text-error italic leading-relaxed">
+                {errorMsg}
+              </p>
+            </div>
+          )}
 
           {/* Terms Checkbox */}
           <div className="flex items-start gap-3">
@@ -136,16 +155,7 @@ export default function RegisterPage() {
               id="register-terms"
               type="checkbox"
               checked={agreedToTerms}
-              onChange={(e) => {
-                setAgreedToTerms(e.target.checked)
-                if (e.target.checked) {
-                  setErrors((prev) => {
-                    const next = { ...prev }
-                    delete next.terms
-                    return next
-                  })
-                }
-              }}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
               className="mt-1 w-4 h-4 border-2 border-[#222222] bg-transparent appearance-none cursor-pointer checked:bg-primary checked:border-primary relative
                 after:content-[''] after:absolute after:top-[1px] after:left-[4px] after:w-[5px] after:h-[9px] after:border-r-2 after:border-b-2 after:border-[#0A0A0A] after:rotate-45 after:opacity-0 checked:after:opacity-100"
             />
@@ -157,11 +167,6 @@ export default function RegisterPage() {
               và đồng ý với các điều khoản sử dụng.
             </label>
           </div>
-          {errors.terms && (
-            <p className="font-label-caps text-[10px] text-error uppercase tracking-widest -mt-4">
-              {errors.terms}
-            </p>
-          )}
 
           {/* Submit */}
           <button

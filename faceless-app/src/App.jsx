@@ -11,6 +11,7 @@ import RegisterPage from './pages/RegisterPage'
 import ForgotPassphrasePage from './pages/ForgotPassphrasePage'
 import RegistrationSuccessPage from './pages/RegistrationSuccessPage'
 import ManifestoPage from './pages/ManifestoPage'
+import AdminPage from './pages/AdminPage'
 
 export default function App() {
   return (
@@ -19,6 +20,9 @@ export default function App() {
         <Routes>
           {/* Registration Success — standalone layout */}
           <Route path="/registration-success" element={<RegistrationSuccessPage />} />
+
+          {/* Admin Console — standalone layout */}
+          <Route path="/admin" element={<AdminPage />} />
 
           {/* All pages with shared Navbar + Footer */}
           <Route element={<Layout />}>
