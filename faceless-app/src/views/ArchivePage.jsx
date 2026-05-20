@@ -1,42 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ArchiveCard from '../components/ui/ArchiveCard'
 import MembershipModal from '../components/modals/MembershipModal'
-
-const archiveItems = [
-  {
-    title: 'Khi Ta Dần Đánh Mất Chính Mình Trên Internet',
-    tags: ['Bản thân', 'Mạng xã hội'],
-    excerpt:
-      'Càng cố gắng thể hiện bản thân trên mạng, chúng ta càng dễ xa rời con người thật của mình. Cuộc sống dần trở thành thứ cần được ghi lại và trình diễn hơn là thực sự trải nghiệm.',
-    isLocked: true,
-  },
-  {
-    title: 'Khi Đam Mê Trở Thành Công Việc',
-    tags: ['Công việc', 'Bản thân'],
-    excerpt:
-      'Môi trường công sở hiện đại không chỉ lấy thời gian, mà còn đòi hỏi cảm xúc và bản sắc cá nhân. Đôi khi “hãy làm điều bạn yêu” lại trở thành cách khiến con người làm việc nhiều hơn mà không nhận ra.',
-    isLocked: true,
-  },
-  {
-    title: 'Cảm Giác Trống Rỗng Giữa Cuộc Sống Hiện Đại',
-    tags: ['Mất phương hướng'],
-    excerpt:
-      'Giữa quá nhiều lựa chọn và nhịp sống liên tục, nhiều người rơi vào trạng thái lửng lơ — không thật sự tệ, nhưng cũng không thấy ý nghĩa rõ ràng trong cuộc sống.',
-    isLocked: true,
-  },
-  {
-    title: 'Văn Phòng Mở Và Áp Lực Phải Luôn “Có Mặt”',
-    tags: ['Công việc', 'Xã hội'],
-    excerpt:
-      'Không gian làm việc mở khiến con người cảm thấy mình luôn bị quan sát. Điều đó vô tình tạo ra áp lực phải liên tục thể hiện sự bận rộn và chuyên nghiệp.',
-    isLocked: false,
-  },
-]
+import { pb } from '../lib/pocketbase'
 
 export default function ArchivePage() {
   const [modalOpen, setModalOpen] = useState(false)
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchArchive = async () => {
+      try {
+        const records = await pb.collection('episodes').getFullList({
+          sort: '-created',
+        })
+        setItems(records)
+      } catch (err) {
+        console.error('Lỗi khi tải kho lưu trữ:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchArchive()
+  }, [])
 
   return (
     <>
@@ -51,19 +40,29 @@ export default function ArchivePage() {
           </p>
         </header>
 
-        {/* 2-Column Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {archiveItems.map((item, index) => (
-            <ArchiveCard
-              key={index}
-              title={item.title}
-              tags={item.tags}
-              excerpt={item.excerpt}
-              isLocked={item.isLocked}
-              onLockedClick={() => setModalOpen(true)}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="py-20 text-center opacity-50 font-label-caps text-label-caps uppercase tracking-widest">
+            Đang truy xuất hồ sơ...
+          </div>
+        ) : items.length > 0 ? (
+          /* 2-Column Grid */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {items.map((item) => (
+              <ArchiveCard
+                key={item.id}
+                title={item.title}
+                tags={item.tags || []}
+                excerpt={item.description}
+                isLocked={item.format === 'Text' && !pb.authStore.isValid}
+                onLockedClick={() => setModalOpen(true)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="py-20 text-center italic text-on-surface-variant font-pull-quote">
+            Kho lưu trữ hiện đang trống.
+          </div>
+        )}
 
         {/* Load More */}
         <div className="mt-16 flex justify-center border-t border-outline-variant pt-8">

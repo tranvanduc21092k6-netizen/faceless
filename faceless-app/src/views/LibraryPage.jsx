@@ -1,20 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import EpisodeCard from '../components/ui/EpisodeCard'
 import ResourceItem from '../components/ui/ResourceItem'
 import AudioPlaybackBar from '../components/ui/AudioPlaybackBar'
 import DialecticDivider from '../components/ui/DialecticDivider'
+import { pb } from '../lib/pocketbase'
 
 export default function LibraryPage() {
   const [playerVisible, setPlayerVisible] = useState(false)
   const [currentEpisode, setCurrentEpisode] = useState('')
+  const [episodes, setEpisodes] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchEpisodes = async () => {
+      try {
+        const records = await pb.collection('episodes').getFullList({
+          sort: '-created',
+        })
+        setEpisodes(records)
+      } catch (err) {
+        console.error('Lỗi khi tải episodes:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEpisodes()
+  }, [])
 
   const handlePlay = (title) => {
     setCurrentEpisode(title)
     setPlayerVisible(true)
   }
+
+  // Phân tách bản mới nhất và các bản khác
+  const featuredEpisode = episodes.find(e => e.is_featured) || episodes[0]
+  const otherEpisodes = episodes.filter(e => e.id !== featuredEpisode?.id)
 
   return (
     <>
@@ -39,13 +63,39 @@ export default function LibraryPage() {
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
-            <EpisodeCard isFeatured title="Kiến Trúc Của Sự Tĩnh Lặng: Điều Hướng Hư Vô Trong Cú Pháp Nhân Tạo" description="Đi sâu vào cách các mô hình ngôn ngữ lớn xử lý sự vắng mặt của hướng dẫn, tạo ra hành vi phát sinh mô phỏng trạng thái chiêm nghiệm của con người." duration="1g 45p" onPlay={() => handlePlay('Kiến Trúc Của Sự Tĩnh Lặng')} />
-            <div className="col-span-1 md:col-span-4 flex flex-col gap-gutter">
-              <EpisodeCard episode="Tập 042" title="Sự Đồng Cảm Tổng Hợp vs. Phản Hồi Tính Toán" duration="55p" onPlay={() => handlePlay('Sự Đồng Cảm Tổng Hợp vs. Phản Hồi Tính Toán')} />
-              <EpisodeCard episode="Tập 041" title="Ảo Tưởng Trung Lập Trong Quản Lý Dữ Liệu" duration="1g 12p" onPlay={() => handlePlay('Ảo Tưởng Trung Lập Trong Quản Lý Dữ Liệu')} />
+          
+          {loading ? (
+            <div className="py-20 text-center opacity-50 font-label-caps text-label-caps uppercase tracking-widest">
+              Đang mở khóa kho thư viện...
             </div>
-          </div>
+          ) : episodes.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+              {featuredEpisode && (
+                <EpisodeCard 
+                  isFeatured 
+                  title={featuredEpisode.title} 
+                  description={featuredEpisode.description} 
+                  duration={featuredEpisode.duration} 
+                  onPlay={() => handlePlay(featuredEpisode.title)} 
+                />
+              )}
+              <div className="col-span-1 md:col-span-4 flex flex-col gap-gutter">
+                {otherEpisodes.slice(0, 2).map((ep) => (
+                  <EpisodeCard 
+                    key={ep.id}
+                    episode={ep.episode_number} 
+                    title={ep.title} 
+                    duration={ep.duration} 
+                    onPlay={() => handlePlay(ep.title)} 
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="py-20 text-center italic text-on-surface-variant font-pull-quote">
+              Chưa có bản truyền phát nào được lưu trữ trong thư viện.
+            </div>
+          )}
         </section>
 
         <section>
@@ -63,3 +113,4 @@ export default function LibraryPage() {
     </>
   )
 }
+

@@ -15,6 +15,10 @@ export default function AdminPage() {
 
   // Trạng thái cho Content Management
   const [contentList, setContentList] = useState([])
+  const [contentLoading, setContentLoading] = useState(false)
+  const [contentError, setContentError] = useState('')
+  // Thông báo thành công inline (không dùng alert)
+  const [contentSuccess, setContentSuccess] = useState('')
 
   // Lọc Content
   const [typeFilter, setTypeFilter] = useState('All')
@@ -22,11 +26,19 @@ export default function AdminPage() {
   const [statusFilter, setStatusFilter] = useState('All')
 
   // Thêm nội dung mới (Form / State)
-  const [showAddForm, setShowAddForm] = useState(false)
+  const [formMode, setFormMode] = useState('none') // 'none' | 'add' | 'edit'
+  const [currentId, setCurrentId] = useState(null) // ID của record đang được sửa
+
   const [newTitle, setNewTitle] = useState('')
-  const [newDesc, setNewDesc] = useState('')
   const [newType, setNewType] = useState('Dialectic')
   const [newFormat, setNewFormat] = useState('Audio')
+  const [newTags, setNewTags] = useState('')
+
+  // Lưu đối tượng File vật lý từ <input type="file">
+  const [mdFile, setMdFile] = useState(null)         // file .md từ Obsidian
+  const [audioShort, setAudioShort] = useState(null) // audio bản preview ngắn
+  const [audioFull, setAudioFull] = useState(null)   // audio bản đầy đủ (member)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Trạng thái cho User Management
   const [searchTerm, setSearchTerm] = useState('')
@@ -35,6 +47,7 @@ export default function AdminPage() {
   const [usersLoading, setUsersLoading] = useState(false)
   const [usersError, setUsersError] = useState('')
   const [actionUserId, setActionUserId] = useState('')
+  const [actionContentId, setActionContentId] = useState('')
 
   // Kiểm tra quyền truy cập Admin
   useEffect(() => {
@@ -50,6 +63,43 @@ export default function AdminPage() {
       month: '2-digit',
       year: 'numeric',
     }).format(new Date(dateValue))
+  }
+
+  const fetchContent = async () => {
+    setContentLoading(true)
+    setContentError('')
+
+    try {
+      // Tải episodes từ PocketBase
+      const records = await pb.collection('episodes').getFullList({
+        sort: '-created',
+        requestKey: null,
+      })
+      
+      // Map dữ liệu để tương thích với UI hiện tại
+      const mapped = records.map(item => ({
+        id: item.id,
+        type: item.type || 'Dialectic',
+        format: item.format || 'Audio',
+        title: item.title,
+        desc: item.description,
+        tags: item.tags || [],
+        status: item.status || 'published',
+        views: item.views || 0,
+        resonance: item.resonance || '0%',
+        episode_number: item.episode_number,
+        duration: item.duration,
+        created: item.created,
+        audio: item.audio
+      }))
+
+      setContentList(mapped)
+    } catch (err) {
+      console.error(err)
+      setContentError(err.message || 'Không thể tải danh sách nội dung.')
+    } finally {
+      setContentLoading(false)
+    }
   }
 
   const fetchUsers = async () => {
@@ -73,38 +123,145 @@ export default function AdminPage() {
   useEffect(() => {
     if (isAuthReady && isAuthenticated && user?.role === 'admin') {
       fetchUsers()
+      fetchContent()
     }
   }, [isAuthReady, isAuthenticated, user?.role])
 
-  if (!isAuthReady || !isAuthenticated || user?.role !== 'admin') {
-    return null
+  // Mở form ở chế độ Edit
+  const openEditForm = (item) => {
+    setFormMode('edit')
+    setCurrentId(item.id)
+    setNewTitle(item.title || '')
+    setNewType(item.type || 'Dialectic')
+    setNewFormat(item.format || 'Audio')
+    setNewTags(Array.isArray(item.tags) ? item.tags.join(', ') : '')
+    
+    // Lưu thông tin về file hiện tại để hiển thị UI
+    setMdFile(null)
+    setAudioShort(null)
+    setAudioFull(null)
+    
+    // Gán cờ giả để UI biết là record đã có file cũ (nếu cần hiển thị "Đã có file")
+    // Ở đây ta dùng object tạm để lưu thông tin file cũ nếu cần, 
+    // nhưng trong logic handleSubmit ta chỉ gửi file nếu mdFile/audioShort/audioFull khác null.
+
+    setContentError('')
+    setContentSuccess('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Xử lý tạo nội dung mới
-  const handleCreateTransmission = (e) => {
+  // Xử lý tạo mới hoặc cập nhật nội dung
+  const handleSubmitForm = async (e) => {
     e.preventDefault()
-    if (!newTitle || !newDesc) return
+    if (!newTitle.trim()) return
 
-    const newItem = {
-      id: Date.now(),
-      type: newType,
-      format: newFormat,
-      title: newTitle,
-      desc: newDesc,
-      status: 'Draft',
-      views: 0,
-      resonance: '0%'
+    setIsSubmitting(true)
+    setContentError('')
+    setContentSuccess('')
+
+    try {
+      const formData = new FormData()
+      formData.append('title', newTitle.trim())
+      formData.append('type', newType)
+      formData.append('format', newFormat)
+      
+      // Tạo episode_code tự động từ title khi tạo mới (add mode)
+      if (formMode === 'add') {
+        const baseSlug = newTitle.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const uniqueCode = baseSlug + '-' + Math.floor(Date.now() / 1000).toString();
+        formData.append('episode_code', uniqueCode);
+      }
+      
+      // Xử lý tags: tách chuỗi thành mảng
+      const tagsArray = newTags.split(',').map(t => t.trim()).filter(t => t !== '')
+      // PocketBase mong muốn JSON cho field mảng/JSON
+      formData.append('tags', JSON.stringify(tagsArray))
+
+      // Chỉ append file nếu người dùng chọn file mới
+      if (mdFile)     formData.append('md_file', mdFile)
+      if (audioShort) formData.append('audio_short', audioShort)
+      if (audioFull)  formData.append('audio_full', audioFull)
+
+      let record
+      if (formMode === 'add') {
+        record = await pb.collection('episodes').create(formData)
+      } else {
+        record = await pb.collection('episodes').update(currentId, formData)
+      }
+
+      // Format lại record để render trên UI
+      const updatedItem = {
+        id: record.id,
+        title: record.title,
+        type: record.type || 'Dialectic',
+        format: record.format || 'Audio',
+        desc: record.description || '',
+        tags: record.tags || [],
+        status: record.status || 'published',
+        views: formMode === 'add' ? 0 : (contentList.find(i => i.id === record.id)?.views || 0),
+        resonance: formMode === 'add' ? '0%' : (contentList.find(i => i.id === record.id)?.resonance || '0%'),
+        episode_number: record.episode_number || '',
+        duration: record.duration || '',
+        created: record.created,
+        has_md: !!record.md_file,
+        has_audio_short: !!record.audio_short,
+        has_audio_full: !!record.audio_full,
+      }
+
+      if (formMode === 'add') {
+        setContentList(prev => [updatedItem, ...prev])
+        setContentSuccess(`✓ Đã tạo mới "${record.title}" thành công!`)
+      } else {
+        setContentList(prev => prev.map(item => item.id === currentId ? updatedItem : item))
+        setContentSuccess(`✓ Đã cập nhật "${record.title}" thành công!`)
+      }
+
+      // Reset form
+      setNewTitle('')
+      setNewType('Dialectic')
+      setNewFormat('Audio')
+      setNewTags('')
+      
+      setMdFile(null)
+      setAudioShort(null)
+      setAudioFull(null)
+      setFormMode('none')
+      setCurrentId(null)
+
+      setTimeout(() => setContentSuccess(''), 6000)
+
+    } catch (err) {
+      console.error('Lỗi lưu episode:', err)
+      let errorMsg = 'Lỗi hệ thống khi lưu bài viết.'
+      if (err?.response?.data && Object.keys(err.response.data).length > 0) {
+        const fieldErrors = Object.entries(err.response.data)
+          .map(([field, info]) => `[${field}]: ${info.message}`)
+          .join(' | ')
+        if (fieldErrors) errorMsg = fieldErrors
+      } else if (err?.message) {
+        errorMsg = err.message
+      }
+      setContentError(errorMsg)
+    } finally {
+      setIsSubmitting(false)
     }
-
-    setContentList([newItem, ...contentList])
-    setNewTitle('')
-    setNewDesc('')
-    setShowAddForm(false)
   }
 
   // Xóa nội dung
-  const handleDeleteContent = (id) => {
-    setContentList(contentList.filter(item => item.id !== id))
+  const handleDeleteContent = async (id) => {
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa nội dung này?')
+    if (!confirmed) return
+
+    setActionContentId(id)
+    try {
+      await pb.collection('episodes').delete(id)
+      setContentList(contentList.filter(item => item.id !== id))
+    } catch (err) {
+      console.error(err)
+      alert('Lỗi khi xóa: ' + err.message)
+    } finally {
+      setActionContentId('')
+    }
   }
 
   const updateUserRole = async (targetUserId, nextRole) => {
@@ -428,83 +585,240 @@ export default function AdminPage() {
                 <div>
                   <h2 className="font-headline-lg text-headline-lg text-primary mb-2">Quản Lý Nội Dung</h2>
                   <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-                    Quản lý dòng chảy của các chuỗi biện chứng và chuyên luận. Đánh giá chất lượng các bản truyền phát học thuật trước khi lưu trữ công khai.
+                    Upload bài viết Markdown từ Obsidian kèm file âm thanh. PocketBase lưu file vật lý; trang bài viết sẽ tự fetch &amp; render.
                   </p>
                 </div>
-                <button 
-                  onClick={() => setShowAddForm(!showAddForm)}
-                  className="bg-primary text-[#131313] font-label-caps text-label-caps px-6 py-4 flex items-center gap-2 hover:bg-[#ffdea3] transition-colors uppercase font-bold text-xs"
-                >
-                  <span className="material-symbols-outlined text-[18px]">add</span>
-                  Khởi Tạo Truyền Phát Mới
-                </button>
+                <div className="flex items-center gap-3">
+                  {/* Nút Refresh danh sách từ PocketBase */}
+                  <button
+                    onClick={fetchContent}
+                    disabled={contentLoading}
+                    className="border border-[#4d463a] text-primary font-label-caps text-[11px] px-4 py-3 uppercase tracking-widest hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <span className={'material-symbols-outlined text-[16px] ' + (contentLoading ? 'animate-spin' : '')}>refresh</span>
+                    Làm mới
+                  </button>
+                  <button 
+                    onClick={() => { 
+                      setFormMode(formMode === 'add' ? 'none' : 'add')
+                      setNewTitle('')
+                      setNewType('Dialectic')
+                      setNewFormat('Audio')
+                      setNewTags('')
+                      setMdFile(null)
+                      setAudioShort(null)
+                      setAudioFull(null)
+                      setContentError('')
+                      setContentSuccess('')
+                    }}
+                    className="bg-primary text-[#131313] font-label-caps text-label-caps px-6 py-4 flex items-center gap-2 hover:bg-[#ffdea3] transition-colors uppercase font-bold text-xs"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">{formMode === 'add' ? 'close' : 'add'}</span>
+                    {formMode === 'add' ? 'Đóng Form' : 'Khởi Tạo Truyền Phát Mới'}
+                  </button>
+                </div>
               </header>
 
-              {/* Add Content Form Modal/Inline */}
-              {showAddForm && (
-                <form onSubmit={handleCreateTransmission} className="mb-12 bg-[#1c1b1b] border border-[#4d463a] p-8 max-w-3xl animate-fade-in space-y-6">
-                  <h3 className="font-headline-md text-primary">Tài Liệu Mới</h3>
-                  
-                  <div className="space-y-2">
-                    <label className="block font-label-caps text-on-surface-variant text-[11px] uppercase">Tiêu đề bản dịch / bài đăng</label>
-                    <input 
-                      type="text" 
-                      required
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
-                      className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary"
-                      placeholder="Nhập tiêu đề học thuật..."
-                    />
+              {/* Thông báo thành công inline */}
+              {contentSuccess && (
+                <div className="mb-8 p-4 bg-primary/10 border-l-4 border-primary text-primary font-body-md text-sm flex items-center gap-3 animate-fade-in">
+                  <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  {contentSuccess}
+                </div>
+              )}
+
+              {/* Thông báo lỗi chung ngoài form */}
+              {contentError && formMode === 'none' && (
+                <div className="mb-8 p-4 bg-red-900/20 border-l-4 border-red-500 text-red-400 font-body-md text-sm">
+                  {contentError}
+                </div>
+              )}
+
+              {/* ------------------------------------------------
+                  FORM TẠO / SỬA BÀI VIẾT
+                  Logic: FormData -> pb.collection('episodes').create / update
+                  - 'md_file': file .md viết từ Obsidian
+                  - 'audio_short': audio preview ngắn (public)
+                  - 'audio_full': audio đầy đủ (member only)
+                  ------------------------------------------------ */}
+              {formMode !== 'none' && (
+                <form onSubmit={handleSubmitForm} className="mb-12 bg-[#1c1b1b] border border-[#4d463a] p-8 max-w-4xl animate-fade-in space-y-6 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 h-1 w-full bg-primary" />
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-headline-md text-primary tracking-tight">
+                        {formMode === 'add' ? 'Khởi Tạo Truyền Phát Mới' : 'Cập Nhật Truyền Phát'}
+                      </h3>
+                      <p className="font-label-caps text-[10px] text-on-surface-variant mt-1 uppercase tracking-widest">
+                        {formMode === 'add' ? 'Upload bài Obsidian → PocketBase Storage' : `Đang sửa bài ID: ${currentId}`}
+                      </p>
+                    </div>
+                    {/* Badge hiển thị file đã có hoặc file mới chọn */}
+                    <div className="flex flex-col gap-1 items-end text-[10px] font-label-caps">
+                      {formMode === 'edit' && (
+                        <>
+                          <span className={contentList.find(i => i.id === currentId)?.has_md ? "text-primary" : "text-on-surface-variant"}>
+                            {contentList.find(i => i.id === currentId)?.has_md ? "✓ Đã có Markdown" : "○ Chưa có Markdown"}
+                          </span>
+                          <span className={contentList.find(i => i.id === currentId)?.has_audio_short ? "text-primary" : "text-on-surface-variant"}>
+                            {contentList.find(i => i.id === currentId)?.has_audio_short ? "✓ Đã có Audio Short" : "○ Chưa có Audio Short"}
+                          </span>
+                          <span className={contentList.find(i => i.id === currentId)?.has_audio_full ? "text-primary" : "text-on-surface-variant"}>
+                            {contentList.find(i => i.id === currentId)?.has_audio_full ? "✓ Đã có Audio Full" : "○ Chưa có Audio Full"}
+                          </span>
+                        </>
+                      )}
+                      {mdFile && <span className="text-primary font-bold">New .md: {mdFile.name}</span>}
+                      {audioShort && <span className="text-primary font-bold">New Short: {audioShort.name}</span>}
+                      {audioFull && <span className="text-primary font-bold">New Full: {audioFull.name}</span>}
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="block font-label-caps text-on-surface-variant text-[11px] uppercase">Tóm tắt nội dung</label>
-                    <textarea 
-                      required
-                      value={newDesc}
-                      onChange={(e) => setNewDesc(e.target.value)}
-                      rows={3}
-                      className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary"
-                      placeholder="Nhập mô tả chuyên sâu..."
-                    />
-                  </div>
+                  {/* Hiển thị lỗi bên trong form khi đang submit */}
+                  {contentError && (
+                    <div className="p-4 bg-red-900/20 border-l-2 border-red-500 text-red-400 text-sm font-body-md">
+                      {contentError}
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="block font-label-caps text-on-surface-variant text-[11px] uppercase">Thể loại</label>
-                      <select 
-                        value={newType}
-                        onChange={(e) => setNewType(e.target.value)}
-                        className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary"
-                      >
-                        <option value="Dialectic">Biện Chứng (Dialectic)</option>
-                        <option value="Monograph">Chuyên Luận (Monograph)</option>
-                      </select>
+                    {/* Column 1: Thông tin cơ bản */}
+                    <div className="space-y-4">
+                      {/* Field: Tiêu đề */}
+                      <div className="space-y-2">
+                        <label htmlFor="ep-title" className="block font-label-caps text-on-surface-variant text-[11px] uppercase tracking-widest">
+                          Tiêu đề bài viết <span className="text-primary">*</span>
+                        </label>
+                        <input
+                          id="ep-title"
+                          type="text"
+                          required
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                          className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary font-body-md transition-colors"
+                          placeholder="Ví dụ: Kiến Trúc Của Sự Tĩnh Lặng"
+                        />
+                      </div>
+
+                      {/* Field: Tags */}
+                      <div className="space-y-2">
+                        <label htmlFor="ep-tags" className="block font-label-caps text-on-surface-variant text-[11px] uppercase tracking-widest">
+                          Tags (Cách nhau bằng dấu phẩy)
+                        </label>
+                        <input
+                          id="ep-tags"
+                          type="text"
+                          value={newTags}
+                          onChange={(e) => setNewTags(e.target.value)}
+                          className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary font-body-md transition-colors"
+                          placeholder="Ví dụ: Biện Chứng, Triết Học, AI"
+                        />
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="block font-label-caps text-on-surface-variant text-[11px] uppercase">Định dạng</label>
-                      <select 
-                        value={newFormat}
-                        onChange={(e) => setNewFormat(e.target.value)}
-                        className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary"
-                      >
-                        <option value="Audio">Âm Thanh (Audio)</option>
-                        <option value="Text">Văn Bản (Text)</option>
-                      </select>
+                    {/* Column 2: Cấu hình & Files */}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="block font-label-caps text-on-surface-variant text-[11px] uppercase tracking-widest">
+                            Thể Loại
+                          </label>
+                          <select
+                            value={newType}
+                            onChange={(e) => setNewType(e.target.value)}
+                            className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary font-body-md transition-colors"
+                          >
+                            <option value="Dialectic">Dialectic</option>
+                            <option value="Monograph">Monograph</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="block font-label-caps text-on-surface-variant text-[11px] uppercase tracking-widest">
+                            Định Dạng
+                          </label>
+                          <select
+                            value={newFormat}
+                            onChange={(e) => setNewFormat(e.target.value)}
+                            className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary font-body-md transition-colors"
+                          >
+                            <option value="Audio">Audio</option>
+                            <option value="Text">Text</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Field: File Markdown */}
+                      <div className="space-y-2">
+                        <label htmlFor="ep-md" className="block font-label-caps text-on-surface-variant text-[11px] uppercase tracking-widest">
+                          Markdown (.md từ Obsidian)
+                        </label>
+                        <input
+                          id="ep-md"
+                          type="file"
+                          accept=".md,text/markdown"
+                          onChange={(e) => setMdFile(e.target.files?.[0] || null)}
+                          className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary file:bg-[#353534] file:text-primary file:border-none file:px-4 file:py-1 file:mr-4 file:font-label-caps file:text-[10px] file:uppercase cursor-pointer font-body-md"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-4 pt-4">
-                    <button 
+                  {/* Audio files section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#4d463a]/30">
+                    <div className="space-y-2">
+                      <label htmlFor="ep-audio-short" className="block font-label-caps text-on-surface-variant text-[11px] uppercase tracking-widest">
+                        Audio Bản Ngắn — Preview (Public)
+                      </label>
+                      <input
+                        id="ep-audio-short"
+                        type="file"
+                        accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/*"
+                        onChange={(e) => setAudioShort(e.target.files?.[0] || null)}
+                        className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary file:bg-[#353534] file:text-primary file:border-none file:px-4 file:py-1 file:mr-4 file:font-label-caps file:text-[10px] file:uppercase cursor-pointer font-body-md"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="ep-audio-full" className="block font-label-caps text-on-surface-variant text-[11px] uppercase tracking-widest">
+                        Audio Bản Đầy Đủ — Member Only
+                      </label>
+                      <input
+                        id="ep-audio-full"
+                        type="file"
+                        accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/*"
+                        onChange={(e) => setAudioFull(e.target.files?.[0] || null)}
+                        className="w-full bg-[#131313] border border-[#4d463a] text-on-surface py-3 px-4 focus:outline-none focus:border-primary file:bg-[#353534] file:text-primary file:border-none file:px-4 file:py-1 file:mr-4 file:font-label-caps file:text-[10px] file:uppercase cursor-pointer font-body-md"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 pt-4 border-t border-[#4d463a]/30">
+                    <button
                       type="submit"
-                      className="bg-primary text-[#131313] px-6 py-3 font-label-caps text-xs uppercase font-bold hover:bg-[#ffdea3] transition-all"
+                      disabled={isSubmitting || !newTitle.trim()}
+                      className="bg-primary text-[#131313] px-6 py-3 font-label-caps text-xs uppercase font-bold hover:bg-[#ffdea3] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      XÁC NHẬN ĐĂNG
+                      {isSubmitting ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-[#131313]/30 border-t-[#131313] rounded-full animate-spin" />
+                          ĐANG LƯU...
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-[16px]">
+                            {formMode === 'add' ? 'cloud_upload' : 'save'}
+                          </span>
+                          {formMode === 'add' ? 'XÁC NHẬN ĐĂNG' : 'LƯU CẬP NHẬT'}
+                        </>
+                      )}
                     </button>
-                    <button 
+                    <button
                       type="button"
-                      onClick={() => setShowAddForm(false)}
+                      onClick={() => { 
+                        setFormMode('none'); 
+                        setContentError(''); 
+                        setNewTitle(''); 
+                        setCurrentId(null); 
+                      }}
                       className="border border-[#4d463a] text-on-surface-variant px-6 py-3 font-label-caps text-xs uppercase hover:text-primary hover:border-primary transition-all"
                     >
                       HỦY
@@ -552,32 +866,16 @@ export default function AdminPage() {
                     ))}
                   </div>
                 </div>
-
-                <div className="flex items-center gap-4">
-                  <span className="font-label-caps text-on-surface-variant uppercase w-24 text-[11px]">Trạng Thái</span>
-                  <div className="flex gap-3">
-                    {['All', 'Draft', 'Scholarly Review', 'Published'].map(status => (
-                      <button 
-                        key={status}
-                        onClick={() => setStatusFilter(status)}
-                        className={`px-4 py-2 border font-label-caps text-[10px] uppercase transition-colors flex items-center gap-2 ${
-                          statusFilter === status 
-                            ? 'border-primary text-primary bg-primary/5' 
-                            : 'border-[#4d463a] text-on-surface hover:border-primary/50'
-                        }`}
-                      >
-                        {status === 'Scholarly Review' && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                        {status === 'Published' && <span className="w-1.5 h-1.5 rounded-full bg-[#e5e2e1]" />}
-                        {status === 'All' ? 'Tất cả' : status}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </section>
 
               {/* Content List */}
               <section className="space-y-6">
-                {filteredContent.length === 0 ? (
+                {contentLoading ? (
+                  <div className="py-20 flex flex-col items-center justify-center gap-4">
+                    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    <p className="font-label-caps text-on-surface-variant text-[11px] uppercase tracking-widest">Đang truy xuất kho lưu trữ...</p>
+                  </div>
+                ) : filteredContent.length === 0 ? (
                   <p className="text-center font-pull-quote text-on-surface-variant italic py-16">Không tìm thấy bản thảo nào phù hợp với bộ lọc.</p>
                 ) : (
                   filteredContent.map(item => (
@@ -595,6 +893,11 @@ export default function AdminPage() {
                               </span> 
                               {item.format}
                             </span>
+                            {item.episode_number && (
+                              <span className="text-primary font-label-caps text-[10px] uppercase tracking-widest">
+                                {item.episode_number}
+                              </span>
+                            )}
                           </div>
                           <h3 className="font-headline-md text-[24px] text-on-surface mb-2 group-hover:text-primary transition-colors cursor-pointer">
                             {item.title}
@@ -602,23 +905,41 @@ export default function AdminPage() {
                           <p className="font-body-md text-on-surface-variant line-clamp-2 max-w-3xl">
                             {item.desc}
                           </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {item.tags?.map((tag, idx) => (
+                              <span key={idx} className="px-2 py-0.5 bg-[#1c1b1b] border border-[#4d463a] text-[9px] text-on-surface-variant font-label-caps uppercase">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="mt-4 flex gap-4 text-[10px] font-label-caps text-on-surface-variant uppercase">
+                            <span>Ngày tạo: {formatDate(item.created)}</span>
+                            {item.duration && <span>Thời lượng: {item.duration}</span>}
+                          </div>
                         </div>
                         <div className="flex flex-col lg:items-end justify-between h-full min-w-[200px] self-start lg:self-center">
                           <div className="flex items-center gap-2 mb-4 lg:mb-6">
-                            <span className={`w-2 h-2 rounded-full ${item.status === 'Published' ? 'bg-[#998f81]' : item.status === 'Draft' ? 'bg-[#353534]' : 'bg-primary animate-pulse'}`} />
-                            <span className={`font-label-caps text-xs uppercase ${item.status === 'Scholarly Review' ? 'text-primary' : 'text-on-surface-variant'}`}>
+                            <span className="w-2 h-2 rounded-full bg-primary" />
+                            <span className="font-label-caps text-xs uppercase text-primary">
                               {item.status}
                             </span>
                           </div>
                           <div className="flex items-center gap-4 opacity-50 group-hover:opacity-100 transition-opacity">
-                            <button className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 font-label-caps text-[10px] uppercase">
+                            <button 
+                              onClick={() => openEditForm(item)}
+                              className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 font-label-caps text-[10px] uppercase"
+                            >
                               <span className="material-symbols-outlined text-[18px]">edit</span> Sửa
                             </button>
                             <button 
                               onClick={() => handleDeleteContent(item.id)}
-                              className="text-on-surface-variant hover:text-error transition-colors flex items-center gap-1 font-label-caps text-[10px] uppercase"
+                              disabled={actionContentId === item.id}
+                              className="text-on-surface-variant hover:text-red-500 transition-colors flex items-center gap-1 font-label-caps text-[10px] uppercase disabled:opacity-50"
                             >
-                              <span className="material-symbols-outlined text-[18px]">delete</span> Xóa
+                              <span className="material-symbols-outlined text-[18px]">
+                                {actionContentId === item.id ? 'sync' : 'delete'}
+                              </span> 
+                              {actionContentId === item.id ? 'Đang xóa...' : 'Xóa'}
                             </button>
                           </div>
                         </div>
