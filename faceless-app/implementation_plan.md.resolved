@@ -1,0 +1,41 @@
+# Kế hoạch sửa lỗi hiển thị bài viết trên trang chủ (Home / Landing Page)
+
+Chào bạn, tôi đã phân tích luồng code và nguyên nhân dẫn đến tình trạng: **tạo bài viết ở Admin thì có, database có dữ liệu nhưng ra trang chủ lại không hiện bài viết nào**. Dưới đây là phân tích chi tiết và kế hoạch khắc phục.
+
+## Nguyên Nhân Gây Lỗi
+Sau khi kiểm tra, lỗi này xảy ra do 2 nguyên nhân cốt lõi:
+
+1. **Vấn đề Quyền Truy Cập (PocketBase API Rules):**
+   - Ở `AdminPage.jsx`, bạn đang đăng nhập dưới tư cách Admin. Thư viện PocketBase (`pb.authStore`) sẽ gắn token Admin vào request, nên Admin có quyền lấy toàn bộ dữ liệu.
+   - Nhưng ở `LandingPage.jsx` (khi chưa đăng nhập, hoặc đăng nhập user thường), request gọi tới PocketBase không có token Admin. Nếu cấu hình **API Rules** của collection `episodes` trong PocketBase đang để trống (khoá) thì người ngoài không thể lấy được danh sách bài viết. Khi đó `pb.collection('episodes').getFullList()` sẽ trả về lỗi, bị `catch` nuốt lỗi đi và gán mảng bài viết bằng `[]`, dẫn đến không hiển thị gì cả.
+
+2. **Lỗi Crash Ứng Dụng do kiểu dữ liệu `tags` (JSON vs String):**
+   - Khi Admin thêm mới bài viết, `tags` được nối thành mảng và lưu dạng JSON String (VD: `'["Triết học", "Biện chứng"]'`).
+   - Nếu ở PocketBase, field `tags` vô tình được thiết lập là kiểu `Text` thay vì `JSON`, khi trả về nó sẽ là một String. Tuy nhiên, component `ArchiveCard.jsx` lại chạy hàm `tags.map(...)`. Nếu `tags` là String, `tags.map` sẽ **gây crash màn hình**, làm React không thể render các bài viết (tạo cảm giác bài viết biến mất).
+
+> [!IMPORTANT]
+> **Hành Động Bạn Cần Làm Ngay Trên PocketBase Admin:**
+> Bạn cần vào trang quản trị PocketBase (http://127.0.0.1:8090/_), mở collection **episodes**, bấm vào icon ổ khoá (API Rules), và thiết lập 2 quyền **List Rule** và **View Rule** thành dấu nháy kép rỗng `""` (Allow everyone). Nếu không làm bước này, người dùng thông thường sẽ không bao giờ thấy được bài viết.
+
+## Proposed Changes
+
+Tôi sẽ sửa mã nguồn để ứng dụng "chống chịu" lỗi tốt hơn và hiển thị thông báo thay vì ẩn đi một cách im lặng.
+
+### Components
+
+#### [MODIFY] `src/components/ui/ArchiveCard.jsx`
+- **Sửa lỗi crash `tags.map`**: Cập nhật logic để tự động phân tích cú pháp (parse JSON) nếu `tags` trả về là một chuỗi. Nếu thất bại, mặc định đưa về mảng rỗng `[]` để tránh sập UI.
+
+#### [MODIFY] `src/views/LandingPage.jsx`
+- **Xử lý Tags an toàn trong Member View**: Ở giao diện đã đăng nhập, phần hiển thị tags cũng cần được dùng fallback để tránh lỗi tương tự.
+- **Thêm Cảnh Báo API Lỗi (Tuỳ chọn)**: Xử lý rõ ràng hơn trong block `catch` khi lấy danh sách `episodes`.
+
+## Verification Plan
+
+### Manual Verification
+1. Chờ tôi cập nhật xong code.
+2. Bạn mở giao diện Admin của PocketBase và set API Rules cho `episodes` là `""`.
+3. Bạn quay lại trang chủ ẩn danh (hoặc tải lại trang), các card bài viết sẽ được hiển thị hoàn chỉnh kể cả khi không đăng nhập.
+4. Chuyển sang màn hình Member (đã đăng nhập) và kiểm tra cả mục Thư Viện lẫn Kho Lưu Trữ xem có hiện không.
+
+Bạn hãy xác nhận kế hoạch trên, tôi sẽ tiến hành cập nhật code ngay nhé!

@@ -2,10 +2,12 @@
 
 import Link from 'next/link'
 
-export default function ArchiveCard({ title, tags, excerpt, isLocked = true, onLockedClick }) {
+export default function ArchiveCard({ title, tags, excerpt, isLocked = false, isPremium = false, onClick, onLockedClick }) {
   const handleClick = () => {
     if (isLocked && onLockedClick) {
       onLockedClick()
+    } else if (onClick) {
+      onClick()
     }
   }
 
@@ -14,26 +16,39 @@ export default function ArchiveCard({ title, tags, excerpt, isLocked = true, onL
       onClick={handleClick}
       className="group relative bg-surface-container-low border border-surface-container-high p-gutter hover:border-primary transition-colors duration-300 flex flex-col h-full cursor-pointer"
     >
-      {/* Lock Icon */}
+      {/* Lock / Premium Icon */}
       <div className="absolute top-gutter right-gutter text-outline-variant group-hover:text-primary transition-colors duration-300">
         <span
           className="material-symbols-outlined"
           style={isLocked ? { fontVariationSettings: "'FILL' 1" } : undefined}
         >
-          {isLocked ? 'lock' : 'lock_open'}
+          {isPremium ? 'workspace_premium' : 'lock_open'}
         </span>
       </div>
 
       {/* Tags */}
       <div className="flex flex-wrap gap-2 mb-6">
-        {tags.map((tag, i) => (
-          <span
-            key={i}
-            className="bg-surface-container-high px-3 py-1 font-label-caps text-label-caps uppercase text-on-surface tracking-widest"
-          >
-            {tag}
-          </span>
-        ))}
+        {(() => {
+          let parsedTags = tags;
+          if (typeof tags === 'string') {
+            try {
+              parsedTags = JSON.parse(tags);
+            } catch {
+              parsedTags = tags ? [tags] : [];
+            }
+          }
+          if (!Array.isArray(parsedTags)) {
+            parsedTags = [];
+          }
+          return parsedTags.map((tag, i) => (
+            <span
+              key={i}
+              className="bg-surface-container-high px-3 py-1 font-label-caps text-label-caps uppercase text-on-surface tracking-widest"
+            >
+              {tag}
+            </span>
+          ));
+        })()}
       </div>
 
       {/* Title */}
@@ -56,12 +71,11 @@ export default function ArchiveCard({ title, tags, excerpt, isLocked = true, onL
             - Đăng nhập để đọc tiếp!
           </p>
         ) : (
-          <Link
-            href="/article/sample"
-            className="font-label-caps text-label-caps uppercase text-on-surface tracking-widest group-hover:text-primary transition-colors"
+          <button
+            className="font-label-caps text-label-caps uppercase text-on-surface tracking-widest group-hover:text-primary transition-colors bg-transparent border-none p-0 cursor-pointer text-left"
           >
-            - Đọc bài viết
-          </Link>
+            - {isPremium ? 'Đọc bài viết Premium' : 'Đọc bài viết'}
+          </button>
         )}
       </div>
     </article>

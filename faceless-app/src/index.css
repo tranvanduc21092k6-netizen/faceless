@@ -142,3 +142,82 @@ body {
 .animate-slide-up {
   animation: slideUp 0.5s ease-in-out;
 }
+
+/* ===== Hiệu ứng fade-out 50% cho trích đoạn công khai ===== */
+.excerpt-fade-overlay {
+  position: relative;
+}
+
+.excerpt-fade-overlay::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, transparent, #0A0A0A);
+  pointer-events: none;
+}
+
+/* ===== Lớp phủ mờ cổng xác thực ===== */
+.auth-blur-overlay {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(10, 10, 10, 0.85);
+  border: 1px solid #222222;
+}
+
+/* ===== Sidebar animation ===== */
+@keyframes sidebarEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.sidebar-enter {
+  animation: sidebarEnter 0.4s ease-out;
+}
+
+/* ===== Markdown Article Rendering (ReadView) ===== */
+.article-markdown h1,
+.article-markdown h2,
+.article-markdown h3 {
+  font-family: 'Playfair Display', serif;
+  color: #E8E6E1;
+}
+
+.article-markdown p {
+  color: #d0c5b5;
+  line-height: 1.7;
+}
+
+.article-markdown blockquote {
+  border-left: 2px solid #C8A96E;
+  padding-left: 1.5rem;
+  font-style: italic;
+  color: #E8E6E1;
+}
+
+.article-markdown a {
+  color: #C8A96E;
+  border-bottom: 1px solid rgba(200, 169, 110, 0.3);
+  transition: border-color 0.3s;
+}
+
+.article-markdown a:hover {
+  border-bottom-color: #C8A96E;
+}
+
+/* ===== No Scrollbar Utility ===== */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

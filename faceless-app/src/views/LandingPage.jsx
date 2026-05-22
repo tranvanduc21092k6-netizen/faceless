@@ -1,10 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../context/AuthContext'
 import AudioPlayer from '../components/ui/AudioPlayer'
 import AudioPlaybackBar from '../components/ui/AudioPlaybackBar'
+import MembershipModal from '../components/modals/MembershipModal'
+import ArchiveCard from '../components/ui/ArchiveCard'
+import { pb } from '../lib/pocketbase'
 
 export default function LandingPage() {
   const { isAuthenticated, user } = useAuth()
@@ -17,6 +21,31 @@ export default function LandingPage() {
   const [activeView, setActiveView] = useState('library')
   const [archiveFilter, setArchiveFilter] = useState('all')
 
+  const [episodes, setEpisodes] = useState([])
+  const [loadingEpisodes, setLoadingEpisodes] = useState(true)
+  const [fetchError, setFetchError] = useState('')
+
+  useEffect(() => {
+    const fetchEpisodes = async () => {
+      try {
+        const records = await pb.collection('episodes').getFullList({
+          sort: '-created',
+        })
+        setEpisodes(records)
+      } catch (err) {
+        console.error('Lỗi khi tải episodes:', err)
+        if (err.status === 403) {
+          setFetchError('Lỗi quyền truy cập: API Rules của collection episodes đang bị khoá đối với người dùng này.')
+        } else {
+          setFetchError('Không thể tải danh sách bài viết. Vui lòng kiểm tra lại server PocketBase.')
+        }
+      } finally {
+        setLoadingEpisodes(false)
+      }
+    }
+    fetchEpisodes()
+  }, [])
+
   const handleEmailSubmit = (e) => {
     e.preventDefault()
     setEmailSubmitted(true)
@@ -25,6 +54,18 @@ export default function LandingPage() {
   const handlePlay = (title) => {
     setCurrentEpisode(title)
     setPlayerVisible(true)
+  }
+
+  // ── Premium Card Gate ──
+  const router = useRouter()
+  const [loginGateOpen, setLoginGateOpen] = useState(false)
+
+  const handleCardClick = (slug, isPremium = false) => {
+    if (isPremium && !isAuthenticated) {
+      setLoginGateOpen(true)
+      return
+    }
+    router.push(`/read/${slug}`)
   }
 
   // ==========================================
@@ -98,31 +139,36 @@ export default function LandingPage() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
-                  {/* Featured Episode (Spans 8 cols) */}
-                  <article className="col-span-1 md:col-span-8 bg-[#111111] border border-[#222222] flex flex-col justify-between p-8 md:p-12 group hover:border-[#e5c487] transition-all duration-300">
+                  {fetchError && (
+                    <div className="col-span-1 md:col-span-12 p-6 bg-red-900/20 border border-red-500 text-red-400 font-body-md text-sm text-center">
+                      {fetchError}
+                    </div>
+                  )}
+                  {episodes.length > 0 && !fetchError && (
+                  <article className="col-span-1 md:col-span-8 bg-[#111111] border border-[#222222] flex flex-col justify-between p-8 md:p-12 group hover:border-[#e5c487] transition-all duration-300 cursor-pointer" onClick={() => handleCardClick(episodes[0].episode_code || episodes[0].id, episodes[0].is_premium)}>
                     <div className="mb-12">
                       <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#201f1f] text-on-surface font-label-caps text-label-caps mb-6 border border-[#4d463a]">
                         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
                         Truyền Phát Mới Nhất
                       </div>
                       <h3 className="font-headline-md text-headline-md text-on-surface mb-4 group-hover:text-primary transition-colors">
-                        Kiến Trúc Của Sự Tĩnh Lặng: Điều Hướng Hư Vô Trong Cú Pháp Nhân Tạo
+                        {episodes[0].title}
                       </h3>
-                      <p className="font-body-md text-body-md text-on-surface-variant max-w-xl">
-                        Đi sâu vào cách các mô hình ngôn ngữ lớn xử lý sự vắng mặt của hướng dẫn, tạo ra hành vi phát sinh mô phỏng trạng thái chiêm nghiệm của con người.
+                      <p className="font-body-md text-body-md text-on-surface-variant max-w-xl line-clamp-3">
+                        {episodes[0].description}
                       </p>
                     </div>
                     <div className="flex items-center justify-between mt-auto border-t border-[#222222] pt-6">
                       <div className="flex items-center gap-4 text-on-surface-variant font-label-caps text-label-caps">
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">schedule</span> 1g 45p
+                          <span className="material-symbols-outlined text-[16px]">schedule</span> {episodes[0].duration || '1g 45p'}
                         </span>
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">headphones</span> Âm thanh
+                          <span className="material-symbols-outlined text-[16px]">{episodes[0].format === 'Text' ? 'article' : 'headphones'}</span> {episodes[0].format || 'Âm thanh'}
                         </span>
                       </div>
                       <button 
-                        onClick={() => handlePlay('Kiến Trúc Của Sự Tĩnh Lặng: Điều Hướng Hư Vô Trong Cú Pháp Nhân Tạo')}
+                        onClick={(e) => { e.stopPropagation(); handlePlay(episodes[0].title); }}
                         aria-label="Nghe tập này" 
                         className="w-12 h-12 flex items-center justify-center border border-[#222222] text-on-surface group-hover:border-primary group-hover:text-primary transition-all rounded-full bg-[#0e0e0e]"
                       >
@@ -130,47 +176,31 @@ export default function LandingPage() {
                       </button>
                     </div>
                   </article>
+                  )}
 
-                  {/* Sidebar Episodes (Span 4 cols) */}
+                  {episodes.length > 1 && (
                   <div className="col-span-1 md:col-span-4 flex flex-col gap-gutter">
-                    {/* Secondary Episode 1 */}
-                    <article className="flex-grow bg-[#111111] border border-[#222222] p-6 flex flex-col justify-between group hover:border-[#e5c487] transition-all duration-300">
+                    {episodes.slice(1, 3).map((ep, idx) => (
+                    <article key={ep.id} className="flex-grow bg-[#111111] border border-[#222222] p-6 flex flex-col justify-between group hover:border-[#e5c487] transition-all duration-300 cursor-pointer" onClick={() => handleCardClick(ep.episode_code || ep.id, ep.is_premium)}>
                       <div>
-                        <span className="text-on-surface-variant font-label-caps text-label-caps mb-3 block">Tập 042</span>
+                        <span className="text-on-surface-variant font-label-caps text-label-caps mb-3 block">{ep.episode_number || `Tập ${idx + 2}`}</span>
                         <h4 className="font-pull-quote text-[22px] leading-snug mb-3 group-hover:text-primary transition-colors italic">
-                          Sự Đồng Cảm Tổng Hợp vs. Phản Hồi Tính Toán
+                          {ep.title}
                         </h4>
                       </div>
                       <div className="flex items-center justify-between border-t border-[#222222] pt-4 mt-6">
-                        <span className="text-on-surface-variant font-label-caps text-label-caps">55p</span>
+                        <span className="text-on-surface-variant font-label-caps text-label-caps">{ep.duration || '55p'}</span>
                         <button 
-                          onClick={() => handlePlay('Sự Đồng Cảm Tổng Hợp vs. Phản Hồi Tính Toán')}
+                          onClick={(e) => { e.stopPropagation(); handlePlay(ep.title); }}
                           className="text-on-surface hover:text-primary transition-colors"
                         >
                           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>play_circle</span>
                         </button>
                       </div>
                     </article>
-                    
-                    {/* Secondary Episode 2 */}
-                    <article className="flex-grow bg-[#111111] border border-[#222222] p-6 flex flex-col justify-between group hover:border-[#e5c487] transition-all duration-300">
-                      <div>
-                        <span className="text-on-surface-variant font-label-caps text-label-caps mb-3 block">Tập 041</span>
-                        <h4 className="font-pull-quote text-[22px] leading-snug mb-3 group-hover:text-primary transition-colors italic">
-                          Ảo Tưởng Trung Lập Trong Quản Lý Dữ Liệu
-                        </h4>
-                      </div>
-                      <div className="flex items-center justify-between border-t border-[#222222] pt-4 mt-6">
-                        <span className="text-on-surface-variant font-label-caps text-label-caps">1g 12p</span>
-                        <button 
-                          onClick={() => handlePlay('Ảo Tưởng Trung Lập Trong Quản Lý Dữ Liệu')}
-                          className="text-on-surface hover:text-primary transition-colors"
-                        >
-                          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>play_circle</span>
-                        </button>
-                      </div>
-                    </article>
+                    ))}
                   </div>
+                  )}
                 </div>
               </section>
 
@@ -271,95 +301,36 @@ export default function LandingPage() {
               </section>
 
               {/* Content Grid */}
-              <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[
-                  {
-                    id: 1,
-                    type: 'transmissions',
-                    category: 'Tập 042',
-                    meta: '1g 45p',
-                    icon: 'schedule',
-                    title: 'Bản Chất Học Của Sự Im Lặng Nhân Tạo',
-                    desc: 'Truy vấn sâu sắc về sự vắng mặt của tiếng ồn trong mô hình tạo sinh và các hệ quả trong mối tương quan người-máy.',
-                    actionText: 'Bắt Đầu Biện Chứng',
-                    playTitle: 'Kiến Trúc Của Sự Tĩnh Lặng: Điều Hướng Hư Vô Trong Cú Pháp Nhân Tạo'
-                  },
-                  {
-                    id: 2,
-                    type: 'monographs',
-                    category: 'Chuyên Luận 12',
-                    meta: '340 Trang',
-                    icon: 'menu_book',
-                    title: 'Kiến Trúc Của Sự Lãng Quên',
-                    desc: 'Khám phá sự phân rã có chủ đích của cấu trúc dữ liệu để mô phỏng sự suy tàn tự nhiên và thanh lịch của ký ức sinh học.',
-                    actionText: 'Đọc Trích Đoạn'
-                  },
-                  {
-                    id: 3,
-                    type: 'series',
-                    category: 'Biện Chứng 08',
-                    meta: '4 Chủ Đề',
-                    icon: 'forum',
-                    title: 'Khoảng Không Cú Pháp',
-                    desc: 'Một cuộc thảo luận về các khoảng trống giữa các từ ngữ được tạo ra, nơi chân lý có khả năng ngụ trị.',
-                    actionText: 'Tham Gia Đối Thoại'
-                  },
-                  {
-                    id: 4,
-                    type: 'transmissions',
-                    category: 'Tập 041',
-                    meta: '2g 10p',
-                    icon: 'schedule',
-                    title: 'Tiếng Vọng Của Thuật Toán',
-                    desc: 'Truy tìm các khuôn mẫu vô tình để lại bởi mạng thần kinh sơ khai trong tư duy đương đại.',
-                    actionText: 'Bắt Đầu Biện Chứng',
-                    playTitle: 'Ảo Tưởng Trung Lập Trong Quản Lý Dữ Liệu'
-                  },
-                  {
-                    id: 5,
-                    type: 'monographs',
-                    category: 'Chuyên Luận 11',
-                    meta: '180 Trang',
-                    icon: 'menu_book',
-                    title: 'Chủ Nghĩa Khổ Hạnh Số',
-                    desc: 'Hướng dẫn kiểm soát bảng tin nguồn dữ liệu để nuôi dưỡng trí tuệ trong kỷ nguyên thừa mứa thông tin tuyệt đối.',
-                    actionText: 'Đọc Trích Đoạn'
-                  },
-                  {
-                    id: 6,
-                    type: 'series',
-                    category: 'Biện Chứng 07',
-                    meta: '12 Chủ Đề',
-                    icon: 'forum',
-                    title: 'Gánh Nặng Của Toàn Tri',
-                    desc: 'Đối mặt với cái giá tâm lý của việc truy xuất thông tin tức thời và vô hạn.',
-                    actionText: 'Tham Gia Đối Thoại'
-                  }
-                ]
-                  .filter(item => archiveFilter === 'all' || item.type === archiveFilter)
-                  .map(card => (
-                    <article key={card.id} className="bg-[#111111] border border-[#222222] hover:border-[#e5c487] p-8 flex flex-col gap-6 relative group transition-all duration-300">
+              {fetchError ? (
+                <div className="p-6 bg-red-900/20 border border-red-500 text-red-400 font-body-md text-sm text-center">
+                  {fetchError}
+                </div>
+              ) : (
+                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {episodes
+                    .map(item => (
+                    <article key={item.id} className="bg-[#111111] border border-[#222222] hover:border-[#e5c487] p-8 flex flex-col gap-6 relative group transition-all duration-300 cursor-pointer" onClick={() => handleCardClick(item.episode_code || item.id, item.is_premium)}>
                       <div className="flex justify-between items-start">
-                        <span className="font-label-caps text-label-caps text-primary uppercase">{card.category}</span>
+                        <span className="font-label-caps text-label-caps text-primary uppercase">{item.type || 'Bài Viết'}</span>
                         <span className="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">{card.icon}</span> {card.meta}
+                          <span className="material-symbols-outlined text-[16px]">{item.format === 'Text' ? 'article' : 'schedule'}</span> {item.duration || ''}
                         </span>
                       </div>
                       <h2 className="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors duration-300">
-                        {card.title}
+                        {item.title}
                       </h2>
                       <p className="font-body-md text-body-md text-on-surface-variant line-clamp-3">
-                        {card.desc}
+                        {item.description}
                       </p>
                       <div className="mt-auto pt-6 border-t border-[#222222] flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <button 
-                          onClick={() => card.playTitle ? handlePlay(card.playTitle) : undefined}
+                          onClick={(e) => { e.stopPropagation(); item.format === 'Audio' ? handlePlay(item.title) : handleCardClick(item.episode_code || item.id, item.is_premium); }}
                           className="font-label-caps text-label-caps text-primary uppercase flex items-center gap-2 hover:text-[#e3c285]"
                         >
                           <span className="material-symbols-outlined text-[16px]">
-                            {card.icon === 'schedule' ? 'play_arrow' : card.icon === 'menu_book' ? 'article' : 'input'}
+                            {item.format === 'Audio' ? 'play_arrow' : 'article'}
                           </span> 
-                          {card.actionText}
+                          Bắt Đầu Biện Chứng
                         </button>
                         <button className="text-on-surface-variant hover:text-primary transition-colors">
                           <span className="material-symbols-outlined">bookmark_add</span>
@@ -367,7 +338,8 @@ export default function LandingPage() {
                       </div>
                     </article>
                   ))}
-              </section>
+                </section>
+              )}
             </div>
           )}
         </div>
@@ -377,6 +349,13 @@ export default function LandingPage() {
           isVisible={playerVisible} 
           onClose={() => setPlayerVisible(false)} 
           episodeTitle={currentEpisode} 
+        />
+
+        {/* Login Gate Modal cho card premium */}
+        <MembershipModal
+          isOpen={loginGateOpen}
+          onClose={() => setLoginGateOpen(false)}
+          variant="login-gate"
         />
       </>
     )
@@ -450,6 +429,37 @@ export default function LandingPage() {
       <div className="w-full max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop">
         <div className="dialectic-divider-simple" />
       </div>
+
+      {/* Bài Viết Mới Nhất */}
+      {(episodes.length > 0 || fetchError) && (
+        <section className="w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mt-section-gap">
+          <div className="text-center mb-12">
+             <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">Phát Hành Mới Nhất</h2>
+             <p className="text-on-surface-variant font-body-md">Đọc trích đoạn hoặc nghe bản preview trước khi quyết định đi sâu vào biện chứng.</p>
+          </div>
+          {fetchError ? (
+            <div className="text-center p-8 bg-red-900/20 border border-red-500/50 max-w-2xl mx-auto">
+              <p className="text-red-400 font-body-md mb-2">{fetchError}</p>
+              <p className="text-on-surface-variant font-body-md text-sm">Nếu bạn là admin, hãy vào PocketBase ➔ Collections ➔ episodes ➔ API Rules ➔ set List & View thành rỗng `""`.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+               {episodes.slice(0, 3).map(item => (
+                  <ArchiveCard
+                    key={item.id}
+                    title={item.title}
+                    tags={item.tags || []}
+                    excerpt={item.description}
+                    isPremium={item.is_premium}
+                    isLocked={item.is_premium && !isAuthenticated}
+                    onClick={() => handleCardClick(item.episode_code || item.id, item.is_premium)}
+                    onLockedClick={() => setLoginGateOpen(true)}
+                  />
+               ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Embedded Audio Player */}
       <section

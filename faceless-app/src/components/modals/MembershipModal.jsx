@@ -13,6 +13,72 @@ export default function MembershipModal({ isOpen, onClose, variant = 'default' }
     onClose()
   }
 
+  // ── VARIANT: LOGIN-GATE ──
+  // Dùng khi click vào card premium mà chưa đăng nhập
+  if (variant === 'login-gate') {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div
+          className="bg-[#111111] border border-[#222222] max-w-md w-full p-10 md:p-12 relative mx-5 animate-fade-in"
+          style={{ borderRadius: 0 }}
+        >
+          {/* Nút đóng */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+
+          {/* Nội dung */}
+          <div className="flex flex-col items-center text-center">
+            <span
+              className="material-symbols-outlined text-primary text-[48px] mb-6"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              lock
+            </span>
+
+            <h2 className="font-headline-md text-headline-md text-on-surface mb-4">
+              Không gian này yêu cầu định danh.
+            </h2>
+
+            <p className="font-body-md text-body-md text-on-surface-variant mb-8 max-w-sm leading-relaxed">
+              Đăng nhập để đọc tiếp nội dung biện chứng chuyên sâu, hoặc đăng ký để truy cập toàn bộ kho lưu trữ.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <a
+                href="/login"
+                className="flex-1 bg-primary-container text-[#0A0A0A] font-label-caps text-label-caps py-4 px-6 hover:brightness-110 transition-all uppercase tracking-[0.15em] text-center font-bold"
+                style={{ borderRadius: 0 }}
+              >
+                Đăng Nhập
+              </a>
+              <a
+                href="/register"
+                className="flex-1 bg-transparent border border-[#222222] text-on-surface font-label-caps text-label-caps py-4 px-6 hover:border-primary hover:text-primary transition-all uppercase tracking-[0.15em] text-center"
+                style={{ borderRadius: 0 }}
+              >
+                Đăng Ký
+              </a>
+            </div>
+
+            {/* Divider */}
+            <div className="w-full h-[1px] bg-[#222222] my-6 relative flex justify-center items-center">
+              <div className="absolute w-2 h-2 bg-primary-container transform rotate-45" />
+            </div>
+
+            <p className="text-[10px] font-label-caps uppercase text-on-surface-variant tracking-widest">
+              Tri thức đòi hỏi sự tĩnh lặng. Tĩnh lặng đòi hỏi danh tính.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (variant === 'archive') {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">

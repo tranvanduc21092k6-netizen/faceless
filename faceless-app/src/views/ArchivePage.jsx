@@ -1,14 +1,30 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import ArchiveCard from '../components/ui/ArchiveCard'
 import MembershipModal from '../components/modals/MembershipModal'
+import { useAuth } from '../context/AuthContext'
 import { pb } from '../lib/pocketbase'
 
 export default function ArchivePage() {
+  const router = useRouter()
+  const { isAuthenticated } = useAuth()
   const [modalOpen, setModalOpen] = useState(false)
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+
+  // Xử lý click vào card bài viết
+  const handleCardClick = (item) => {
+    const slug = item.episode_code || item.id
+    // Nếu là premium và chưa đăng nhập → hiện modal login-gate
+    if (item.is_premium && !isAuthenticated) {
+      setModalOpen(true)
+      return
+    }
+    // Chuyển đến route đọc hợp nhất
+    router.push(`/read/${slug}`)
+  }
 
   useEffect(() => {
     const fetchArchive = async () => {
@@ -53,7 +69,9 @@ export default function ArchivePage() {
                 title={item.title}
                 tags={item.tags || []}
                 excerpt={item.description}
-                isLocked={item.format === 'Text' && !pb.authStore.isValid}
+                isPremium={item.is_premium}
+                isLocked={item.is_premium && !isAuthenticated}
+                onClick={() => handleCardClick(item)}
                 onLockedClick={() => setModalOpen(true)}
               />
             ))}
@@ -76,7 +94,7 @@ export default function ArchivePage() {
       <MembershipModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        variant="archive"
+        variant="login-gate"
       />
     </>
   )
