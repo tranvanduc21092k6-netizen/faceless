@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   const [isAuthReady, setIsAuthReady] = useState(false)
 
   useEffect(() => {
-    setUser(pb.authStore.model)
+    setUser(pb.authStore.record || pb.authStore.model)
     setIsAuthenticated(pb.authStore.isValid)
     setIsAuthReady(true)
 
@@ -19,7 +19,13 @@ export function AuthProvider({ children }) {
     const unsubscribe = pb.authStore.onChange((token, model) => {
       setUser(model)
       setIsAuthenticated(pb.authStore.isValid)
+      document.cookie = pb.authStore.exportToCookie({ httpOnly: false, path: '/' })
     })
+
+    // Đồng bộ ngay lúc mount để Next.js API route nhận được cookie
+    if (typeof document !== 'undefined') {
+      document.cookie = pb.authStore.exportToCookie({ httpOnly: false, path: '/' })
+    }
 
     return () => {
       if (typeof unsubscribe === 'function') {
@@ -84,8 +90,24 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Re-fetch user record từ PocketBase để cập nhật role mới sau khi thanh toán
+  const refreshUser = async () => {
+    try {
+      const userRecord = pb.authStore.record || pb.authStore.model
+      if (!pb.authStore.isValid || !userRecord?.id) return
+      const freshUser = await pb.collection('users').getOne(userRecord.id)
+      // Cập nhật authStore model và state
+      pb.authStore.save(pb.authStore.token, freshUser)
+      setUser(freshUser)
+    } catch (err) {
+      console.error('[AuthContext] refreshUser thất bại:', err.message)
+    }
+  }
+
+  const isPaid = user?.role === 'paid' || user?.role === 'admin'
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isAuthReady, login, register, logout, forgotPassphrase }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isAuthReady, isPaid, login, register, logout, forgotPassphrase, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

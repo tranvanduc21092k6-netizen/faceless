@@ -7,8 +7,9 @@ import { useAuth } from '../../context/AuthContext'
 
 export default function Navbar() {
   const pathname = usePathname()
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, logout, isPaid } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
 
   const isActive = (path) => pathname === path
 
@@ -47,13 +48,36 @@ export default function Navbar() {
       <div className="flex items-center gap-6 font-label-caps text-label-caps">
         {isAuthenticated ? (
           // HIỂN THỊ TRẠNG THÁI ĐÃ ĐĂNG NHẬP (STITCH STYLE)
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             {user?.role === 'admin' && (
               <Link
                 href="/admin"
                 className="bg-[#201f1f] text-primary border border-primary px-3.5 py-2 hover:bg-primary hover:text-[#0A0A0A] transition-all uppercase text-[10px] tracking-wider font-bold"
               >
                 Console Admin
+              </Link>
+            )}
+
+            {/* ── Icon Nâng Cấp Premium (chỉ hiện với free user) ── */}
+            {!isPaid && (
+              <Link
+                href="/upgrade"
+                title="Nâng cấp Premium"
+                className="relative flex items-center gap-2 border border-[#C8A96E]/40 hover:border-[#C8A96E] px-3 py-1.5 text-[#C8A96E] hover:bg-[#C8A96E]/10 transition-all duration-300 group"
+                style={{ borderRadius: 0 }}
+                id="navbar-upgrade-btn"
+              >
+                <span
+                  className="material-symbols-outlined text-[18px] text-[#C8A96E]"
+                  style={{ textShadow: '0 0 8px rgba(200,169,110,0.5)' }}
+                >
+                  auto_awesome
+                </span>
+                <span className="hidden md:inline font-label-caps text-[11px] uppercase tracking-widest text-[#C8A96E]">
+                  Nâng Cấp
+                </span>
+                {/* Pulse dot */}
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#C8A96E] rounded-full animate-pulse" />
               </Link>
             )}
 
@@ -75,6 +99,7 @@ export default function Navbar() {
               Đăng Xuất
             </button>
           </div>
+
         ) : (
           // HIỂN THỊ KHI CHƯA ĐĂNG NHẬP
           <>

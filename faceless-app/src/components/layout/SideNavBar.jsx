@@ -13,14 +13,18 @@ import { useAuth } from '../../context/AuthContext'
  *   - border-r border-outline-variant
  *   - Icon dọc: home, book, person, logout
  *   - Cạnh sắc: 0px corner radii (rounded-none)
+ *   - Icon Premium: auto_awesome (Matte Gold) — chỉ hiển thị khi role=user
  *
  * Mobile: thanh trên cùng với nút hamburger
  */
 export default function SideNavBar() {
   const pathname = usePathname()
-  const { isAuthenticated, logout } = useAuth()
+  const { isAuthenticated, logout, isPaid, user } = useAuth()
 
   const isActive = (path) => pathname === path
+
+  // Chỉ hiển thị upgrade icon khi user đã login nhưng chưa là paid/admin
+  const showUpgradeIcon = isAuthenticated && !isPaid
 
   const navItems = [
     { path: '/', icon: 'home', title: 'Trang Chủ' },
@@ -41,7 +45,25 @@ export default function SideNavBar() {
         >
           F
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          {/* Premium upgrade icon — mobile */}
+          {showUpgradeIcon && (
+            <Link
+              href="/upgrade"
+              title="Nâng cấp Premium"
+              className="relative p-2 transition-all duration-200 group"
+              style={{ borderRadius: 0 }}
+            >
+              <span
+                className="material-symbols-outlined text-[#C8A96E]"
+                style={{ textShadow: '0 0 10px rgba(200, 169, 110, 0.4)' }}
+              >
+                auto_awesome
+              </span>
+              {/* Pulse dot indicator */}
+              <span className="absolute top-1 right-1 w-2 h-2 bg-[#C8A96E] rounded-full animate-pulse" />
+            </Link>
+          )}
           {isAuthenticated && (
             <button
               onClick={logout}
@@ -104,6 +126,35 @@ export default function SideNavBar() {
             </Link>
           ))}
 
+          {/* ── Premium Upgrade Icon ── */}
+          {showUpgradeIcon && (
+            <Link
+              href="/upgrade"
+              title="Nâng cấp Premium"
+              className="nav-item group relative flex items-center justify-center w-12 h-12 hover:bg-[#353534] transition-all duration-200"
+              style={{ borderRadius: 0 }}
+              id="sidebar-upgrade-icon"
+            >
+              <span
+                className="material-symbols-outlined text-[#C8A96E] transition-colors duration-200"
+                style={{ textShadow: '0 0 10px rgba(200, 169, 110, 0.3)' }}
+              >
+                auto_awesome
+              </span>
+
+              {/* Pulse dot */}
+              <span className="absolute top-1 right-1 w-2 h-2 bg-[#C8A96E] rounded-full animate-pulse" />
+
+              {/* Tooltip */}
+              <div
+                className="nav-tooltip absolute left-14 bg-[#353534] text-[#e5c487] px-3 py-1.5 font-label-caps text-[11px] whitespace-nowrap shadow-lg border border-[#4d463a] pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 uppercase tracking-widest"
+                style={{ borderRadius: 0, transform: 'translateX(-10px)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
+              >
+                Nâng cấp Premium
+              </div>
+            </Link>
+          )}
+
           {/* Person / Profile icon */}
           <Link
             href={isAuthenticated ? '/member' : '/login'}
@@ -129,6 +180,14 @@ export default function SideNavBar() {
           </div>
         )}
       </nav>
+
+      <style>{`
+        .nav-item:hover .nav-tooltip {
+          opacity: 1 !important;
+          transform: translateX(0) !important;
+        }
+      `}</style>
     </>
   )
 }
+

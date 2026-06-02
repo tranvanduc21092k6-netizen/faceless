@@ -33,11 +33,23 @@ export async function createAdminPB() {
   }
 
   try {
-    // Xác thực qua PocketBase Admin API
-    // Lưu ý: PocketBase v0.20+ dùng pb.collection('_superusers') thay vì pb.admins
-    // Nhưng đối với user collection auth, ta dùng authWithPassword từ collection 'users'
-    // với tài khoản có role 'admin'
-    await pb.collection('users').authWithPassword(email, password)
+    // SDK v0.26 không còn pb.admins, nhưng server là v0.22 (dùng /api/admins).
+    // Ta gọi trực tiếp REST API để lấy admin token và set vào pb
+    const authRes = await fetch(`${pbUrl}/api/admins/auth-with-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identity: email, password: password })
+    });
+    
+    if (!authRes.ok) {
+      throw new Error(`Auth API error: ${authRes.statusText}`);
+    }
+    
+    const authData = await authRes.json();
+    
+    // Set token vào authStore để dùng cho các request tiếp theo của Admin
+    pb.authStore.save(authData.token, authData.admin);
+    
   } catch (err) {
     throw new Error(
       `[PB Admin] Không thể xác thực admin: ${err.message}. ` +

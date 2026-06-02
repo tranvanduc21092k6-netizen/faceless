@@ -42,11 +42,13 @@ export function createServerPB(cookieStore) {
  * @returns {'guest'|'free'|'premium'} — Trạng thái xác thực
  */
 export function getAuthStatus(pb) {
-  if (!pb.authStore.isValid || !pb.authStore.model) {
+  const user = pb.authStore.record || pb.authStore.model
+
+  if (!pb.authStore.isValid || !user) {
     return 'guest'
   }
 
-  const role = pb.authStore.model.role
+  const role = user.role
   if (role === 'admin' || role === 'paid') {
     return 'premium'
   }

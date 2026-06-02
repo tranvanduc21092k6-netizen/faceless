@@ -30,8 +30,8 @@ export function middleware(request) {
       // PocketBase lưu cookie dưới dạng JSON: { token: "...", model: {...} }
       const parsed = JSON.parse(decodeURIComponent(authCookie.value))
       
-      if (parsed?.token && parsed?.model) {
-        userModel = parsed.model
+      if (parsed?.token && (parsed?.model || parsed?.record)) {
+        userModel = parsed.model || parsed.record
         const role = userModel.role || 'user'
 
         if (role === 'admin' || role === 'paid') {

@@ -490,33 +490,52 @@ export default function ReadView({ initialAuthStatus = 'guest' }) {
             className="material-symbols-outlined text-[#C8A96E] text-[48px] mb-6"
             style={{ fontVariationSettings: "'FILL' 1" }}
           >
-            lock
+            {isAuthenticated ? 'auto_awesome' : 'lock'}
           </span>
 
           {/* Text yêu cầu xác thực */}
           <h2 className="font-headline-md text-[24px] md:text-[32px] text-[#E8E6E1] mb-4 leading-[1.3] font-medium">
-            Không gian này yêu cầu định danh.
+            {isAuthenticated
+              ? 'Nội dung này dành cho thành viên Premium.'
+              : 'Không gian này yêu cầu định danh.'}
           </h2>
           <p className="font-body-md text-[16px] text-[#d0c5b5] mb-8 max-w-md leading-[1.6]">
-            Đăng nhập để đọc tiếp. Tham gia biện chứng để truy cập toàn bộ kho lưu trữ, bài luận độc quyền và phiên nghe đầy đủ.
+            {isAuthenticated
+              ? 'Nâng cấp lên Premium để đọc toàn bộ bài luận chuyên sâu, nghe phiên biện chứng đầy đủ và truy cập kho lưu trữ không giới hạn.'
+              : 'Đăng nhập để đọc tiếp. Tham gia biện chứng để truy cập toàn bộ kho lưu trữ, bài luận độc quyền và phiên nghe đầy đủ.'}
           </p>
 
           {/* Nút CTA */}
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
-            <Link
-              href="/login"
-              className="flex-1 bg-[#C8A96E] text-[#0A0A0A] font-label-caps text-[12px] py-4 px-6 hover:brightness-110 transition-all uppercase tracking-[0.15em] text-center font-bold"
-              style={{ borderRadius: 0 }}
-            >
-              Đăng Nhập
-            </Link>
-            <Link
-              href="/register"
-              className="flex-1 bg-transparent border border-[#222222] text-[#E8E6E1] font-label-caps text-[12px] py-4 px-6 hover:border-[#C8A96E] hover:text-[#C8A96E] transition-all uppercase tracking-[0.15em] text-center"
-              style={{ borderRadius: 0 }}
-            >
-              Đăng Ký
-            </Link>
+            {isAuthenticated ? (
+              // User đã login nhưng là free → nâng cấp
+              <Link
+                href="/upgrade"
+                className="flex-1 bg-[#C8A96E] text-[#0A0A0A] font-label-caps text-[12px] py-4 px-6 hover:brightness-110 transition-all uppercase tracking-[0.15em] text-center font-bold flex items-center justify-center gap-2"
+                style={{ borderRadius: 0 }}
+              >
+                <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                Nâng Cấp Premium
+              </Link>
+            ) : (
+              // Guest → đăng nhập / đăng ký
+              <>
+                <Link
+                  href="/login"
+                  className="flex-1 bg-[#C8A96E] text-[#0A0A0A] font-label-caps text-[12px] py-4 px-6 hover:brightness-110 transition-all uppercase tracking-[0.15em] text-center font-bold"
+                  style={{ borderRadius: 0 }}
+                >
+                  Đăng Nhập
+                </Link>
+                <Link
+                  href="/register"
+                  className="flex-1 bg-transparent border border-[#222222] text-[#E8E6E1] font-label-caps text-[12px] py-4 px-6 hover:border-[#C8A96E] hover:text-[#C8A96E] transition-all uppercase tracking-[0.15em] text-center"
+                  style={{ borderRadius: 0 }}
+                >
+                  Đăng Ký
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Divider */}

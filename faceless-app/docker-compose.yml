@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Next.js Frontend
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: faceless_web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Next.js client needs public URL to connect to PocketBase
+      - NEXT_PUBLIC_POCKETBASE_URL=http://localhost:8090
+      # Next.js server needs internal URL to connect to PocketBase container
+      - POCKETBASE_URL=http://pocketbase:8090
+      # Mật khẩu webhook và admin - thay thế bằng biến môi trường thật trên production
+      - PB_ADMIN_EMAIL=admin@faceless.org
+      - PB_ADMIN_PASSWORD=AdminPassword123!
+      - PAYMENT_WEBHOOK_SECRET=faceless_webhook_secret_change_me
+    depends_on:
+      - pocketbase
+    restart: unless-stopped
+
+  # PocketBase Backend
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:0.22.9
+    container_name: faceless_pb
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./pb_data:/pb/pb_data
+      - ./pb_hooks:/pb/pb_hooks
+    command: ["serve", "--http=0.0.0.0:8090"]
+    restart: unless-stopped
